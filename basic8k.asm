@@ -59,33 +59,51 @@
 ; 5/12/77   - BUG IN NESTED FOR'S AND REENTERED FOR'S FIXED
 ;
 ; ASSEMBLY PARAMETERS:
-        LARGE   EQU     0       ;-1=9K ASSEMBLY, 0=8K
-        CPM     EQU     0       ;-1=RUN UNDER CPM
-        HUNTER  EQU     0       ;-1= INCLUDE BAUD COMMAND
+;        LARGE   EQU     0       ;-1=9K ASSEMBLY, 0=8K
+;        CPM     EQU     0       ;-1=RUN UNDER CPM
+;        HUNTER  EQU     0       ;-1= INCLUDE BAUD COMMAND
+
+;include "CONFIG.asm"
 ;
-; CPM EQUATES
+; SIO equates
 ;
-        BOOT    EQU     0       ;WARM BOOT
-        BDOS    EQU     5       ;BDOS ENTRY
-        TBASE   EQU     0100H   ;PROGRAM LOAD UNDER CPM
-        CSTAT   EQU     3       ;OFFSET OF CONSOLE STATUS
-                                ;...QUERY IN BIOS TABLE
+SIO_RX		equ $18
+SIO_TX		equ $18
+SIO_RX_STATUS	equ $19
+SIO_TX_STATUS	equ $19
+SIO_RX_FULL	equ $01
+SIO_TX_EMPTY	equ $04
+
+UART_TX_EMPTY	EQU$20
+UART_RX_FULL	EQU$01
+
+UART		EQU $04
+UART0		EQU UART+0
+UART1		EQU UART+1
+UART2		EQU UART+2
+UART3		EQU UART+3
+UART4		EQU UART+4
+UART5		EQU UART+5
+UART6		EQU UART+6
+UART7		EQU UART+7
+UART_TX     EQU UART0
+UART_RX     EQU UART0
+
+OFFSET	EQU $0000
+
+RUBOUT	EQU 0x08
+; end include
+
 ;
 ; BASIC EQUATES
 ;
         FATAL   EQU     0F7H    ;CODE FOR FATAL IS RST 6
 ;
-BASIC:  IF      NOT CPM
-        ORG     0
+BASIC:  ORG     0+OFFSET
         LXI     H,RAM+1024
         MVI     A,0AEH  ;START OF INIT SEQUENCE
         JMP     INIT1   ;FINISH INIT
-        ENDIF
 ;
-        IF      CPM
-        ORG     TBASE
-        JMP     INITC   ;USE TEMPORARY CODE AT END
-        ENDIF
 ;
 ;       ORG     8
 ;
@@ -155,9 +173,7 @@ RST6:   XTHL            ;SAVE HL, GET ERROR CODE PTR
         PUSH    B
         JMP     ERROR   ;CONTINUE
 ;
-        IF NOT CPM
-        ORG     59      ;LEAVE 3 BYTES FOR DDT
-        ENDIF
+        ORG     59+OFFSET      ;LEAVE 3 BYTES FOR DDT
 ;
 RST4A:  MOV     E,A     ;PUT IN LOW
         ORA     A       ;TEST SIGN
@@ -178,16 +194,11 @@ RST4B:  DAD     D       ;BUMP H,L
 ; SETUP POINTERS FOR STACK, DATA, AND PROGRAM
 ; INIT SIO BOARD
 ;
-INIT1:  IF      NOT CPM
-        OUT     TTY+1   ;INIT TERMINAL
-        MVI     A,40H
-        OUT     TTY+1
-        MVI     A,0BAH
-        OUT     TTY+1
-        MVI     A,37H
-        OUT     TTY+1
-        LXI     B,1024  ;1K INCR
-INIT2:  MOV     A,M     ;GET A BYTE FROM MEMORY
+INIT1:  LXI     B,1024  ;1K INCR
+INIT2:  MOV A,H		; check if we've reached A0
+        CPI 0xA0
+        JP INIT3   	; if yes, then exit loop with HL=a000
+        MOV     A,M     ;GET A BYTE FROM MEMORY
         CMA             ;COMPLEMENT
         MOV     M,A     ;REPLACE
         CMP     M       ;TEST IF RAM/ROM/END
@@ -196,23 +207,24 @@ INIT2:  MOV     A,M     ;GET A BYTE FROM MEMORY
         MOV     M,A     ;PUT ORIG BACK
         DAD     B       ;POINT NEXT BLOCK
         JNC     INIT2   ;LOOP
-        ENDIF
 ;
 INIT3:  SPHL            ;SET STACK POINTER TO END OF MEMORY
         LXI     B,-256 ;ALLOW 256 BYTES FOR STACK
         DAD     B       ;ADD TO ADDRESS
         SHLD    DATAB   ;SAVE ADDR OF START OF DATA
-;
-; SOFTWARE WRITE PROTECT OF FIRST 9K OF RAM.
-;
-; BUT NO PROTECT UNDER CPM OR FOR 8K (EPROM) VERSION
-        IF      LARGE AND NOT CPM
-        MVI     A,2     ;SET PROTECT OF FIRST 1K BLOCK
-PROTC:  OUT     0FEH    ;SEND IT
-        ADI     4       ;ADDRESS NEXT 1K BLOCK
-        CPI     26H     ;STOP AFTER 9 BLOCKS
-        JNZ     PROTC   ;CONTINUE TO PROTECT
-        ENDIF
+
+UART_INIT:		MVI    A,80h		;Mask to Set DLAB Flag
+			OUT    UART3
+			MVI    A,12		;Divisor = 12 @ 9600bps w/ 1.8432 Mhz
+;			MVI    A,1			;Divisor = 1 @ 115200bps w/ 1.8432 Mhz
+			OUT    UART0		;Set BAUD rate to 9600
+			MVI    A,00
+			OUT    UART1		;Set BAUD rate to 9600
+			MVI    A,03h
+			OUT    UART3		;Set 8-bit data, 1 stop bit, reset DLAB Flag
+			MVI	  A,00h
+			OUT    UART1		;no interrupts
+
         XRA     A       ;GET A ZERO IN A
         PUSH    PSW     ;SET STACK 1 LEVEL DEEP WITHOUT A GOSUB
         LXI     H,0     ;CLEAR H,L
@@ -223,9 +235,6 @@ PROTC:  OUT     0FEH    ;SEND IT
         MVI     B,8     ;LOAD COUNT
         CALL    COPYD   ;COPY TO TRND<X> IN RAM TABLE
         MVI     M,2     ;SET RANDOM SWITCH
-        IF      CPM
-        CALL    NEW0    ;AUTOMATIC "NEW"
-        ENDIF
         LXI     H,VERS  ;POINT VERSION MESSAGE
 RDYM:   CALL    TERMM   ;WRITE IT
 ;
@@ -437,7 +446,7 @@ HDRTL   EQU     $
 ; PUNCH HEADER OR TRAILER ON PAPER TAPE.
 ;
         MVI     B,25    ;LOAD COUNT
-HDR1:   MVI     A,0FFH  ;LOAD RUBOUT
+HDR1:   MVI     A,RUBOUT  ;LOAD RUBOUT 0xff
         CALL    TESTO   ;WRITE IT
         DCR     B       ;DECREMENT COUNT
         XRA     A       ;ZERO A
@@ -1273,7 +1282,7 @@ INPUT   EQU     $
 INPU1:  RST     1       ;SKIP SPACES
         CPI     27H     ;TEST IF QUOTE
         JZ      INPU2   ;BRIF IS
-        CPI     '"'     ;TEST IF INPUT LITERAL
+        CPI     0x22    ;'"'     ;TEST IF INPUT LITERAL
         JNZ     INPU6   ;BRIF NOT
 INPU2:  MOV     C,A     ;SAVE DELIM
         LXI     D,IOBUF ;POINT BUFFER
@@ -1577,7 +1586,7 @@ CHANG   EQU     $
         MOV     D,A     ;REPLACE
         CALL    SEARC   ;GET ADDRESS
         RST     4       ;POINT START OF ELEMENT 0,0
-        DB      -11 AND 0FFH
+        DB      -11     ; AND 0FFH
         POP     D       ;GET PTR TO STMT
         XCHG            ;FLIP
         CALL    EOL     ;NEXT MUST BE E-O-L
@@ -1593,7 +1602,7 @@ CHA1:   PUSH    B       ;SAVE CTR
         POP     H       ;GET ADDR
         RST     3       ;STORE IT
         RST     4       ;POINT TO NEXT
-        DB      -8 AND 0FFH
+        DB      -8      ; AND 0FFH
         POP     D       ;RESTORE STRING
         POP     B       ;AND CTR
         INX     D       ;POINT NEXT CHAR
@@ -1608,7 +1617,7 @@ CHA2:   MOV     A,D     ;GET HI NAME
         MOV     D,A     ;SAVE
         CALL    SEARC   ;GET ADDR
         RST     4       ;POINT ELEMENT 0,0
-        DB      -11 AND 0FFH
+        DB      -11     ; AND 0FFH
         XTHL            ;SAVE ON STACK
         LXI     D,TOLIT ;POINT 'TO'
         RST     2       ;COMPARE
@@ -1625,7 +1634,7 @@ CHA2:   MOV     A,D     ;GET HI NAME
         PUSH    D       ;SAVE IT
         RST     5       ;LOAD IT
         RST     4       ;POINT NEXT
-        DB      -8 AND 0FFH
+        DB      -8      ; AND 0FFH
         PUSH    H       ;SAVE H,L
         CALL    FBIN    ;CONVERT
         POP     H       ;RESTORE
@@ -1638,7 +1647,7 @@ CHA3:   STAX    D       ;PUT TO STRING
         PUSH    D       ;AND AD^DR
         RST     5       ;LOAD NEXT
         RST     4       ;POINT NEXT
-        DB      -8 AND 0FFH
+        DB      -8      ;  AND 0FFH
         PUSH    H       ;AND H ADDR
         CALL    FBIN    ;CONVERT
         POP     H       ;RESTORE H,L
@@ -1832,7 +1841,7 @@ EVPS1:  PUSH    H       ;SAVE PTR TO NEXT COEFFICIENT
 EVPS2:  CALL    FMUL    ;FACC*X^N->FACC
         POP     H       ;COEFFICENT PTR
         RST     4       ;MOVE TO NEXT COEFFICIENT
-        DB      -4 AND 0FFH
+        DB      -4      ; AND 0FFH
         MOV     A,M     ;GET EXPONENT
         DCR     A       ;TEST FOR 1
         JNZ     EVPS1   ;BRIF NOT 1
@@ -2328,7 +2337,7 @@ CONC6:  MOV     A,M     ;GET A BYTE
         JNZ     CONC6   ;LOOP
         POP     H       ;RESTORE H,L
         RST     4       ;ADJUST H,L
-        DB      -7 AND 0FFH
+        DB      -7      ; AND 0FFH
         MVI     A,4     ;DELETE 4 BYTES
         CALL    SQUIS   ;GO COMPRESS
         JMP     EVAL    ;CONTINUE EVALUATION
@@ -2887,7 +2896,7 @@ LDDTP:  CPI     '+'     ;TEST IF UNARY PLUS
         JZ      CERCE   ;BRIF IS
         CPI     27H     ;TEST IF LITERAL (SINGLE QUOTE)
         JZ      LITST   ;BRIF IS
-        CPI     '"'     ;TEST IF LITERAL
+        CPI     0x22    ;'"'     ;TEST IF LITERAL
         JNZ     SNERR   ;BRIF NOT CON, FUNCTION, OR VAR
 LITST:  MOV     C,A     ;SAVE DELIMITER
         LXI     D,STRIN ;POINT BUFFER
@@ -3000,7 +3009,7 @@ OPLP2:  INR     D       ;BUMP BYTE COUNT
         JNC     INS     ;IF NC, YES, INSERT 05
         LHLD    EXPRS   ;NO, INSERT OPCODE BEFORE VAR AT END
         RST     4       ;SKIP OVER VARIABLE
-        DB      -3 AND 0FFH
+        DB      -3      ; AND 0FFH
         MVI     D,4     ;BYTE COUNT
         MOV     E,B     ;INSERT THIS OP CODE
 INS:    MOV     B,E     ;SAVE FOR BRANCH AFTER INSERTION
@@ -3108,7 +3117,7 @@ EV3A:   POP     D       ;GET ADDR IN STACK
         MOV     A,M     ;LOAD TYPE
         MOV     B,M     ;GET TYPE
         RST     4       ;ADJUST H,L
-        DB      -3 AND 0FFH
+        DB      -3      ; AND 0FFH
         MOV     A,B     ;LOAD TYPE
         POP     B       ;RESTORE CTRS
         ANI     18H     ;ISOLATE #ARGS
@@ -3264,7 +3273,7 @@ EV11:   POP     H       ;GET H,L
         DCX     H       ;AND AGAIN
         CALL    GTEMP   ;GO SAVE FACC
         RST     4       ;ADJUST H,L
-        DB      -7 AND 0FFH
+        DB      -7      ; AND 0FFH
         MVI     A,4     ;DELETE 4 BYTES
         CALL    SQUIS   ;GO COMPRESS
         JMP     EVAL    ;CONTINUE
@@ -3281,7 +3290,7 @@ EVNEG:  INX     H       ;POINT BACK TO OP
         POP     B       ;GET CTRS
         CALL    GTEMP   ;GO STORE FACC IN STACK
         RST     4       ;ADJUST H,L
-        DB      -4 AND 0FFH
+        DB      -4      ; AND 0FFH
 EVCOM:  MVI     A,1     ;DELETE 1 BYTE
         CALL    SQUIS   ;COMPRESS
         LXI     H,CMACT ;GET COUNT
@@ -3625,7 +3634,7 @@ FOUTH:  POP     H       ;GET PTR
         INR     A       ;PLUS ONE
 FOUTI:  INX     H       ;POINT NEXT
         PUSH    H       ;SAVE PTR
-        MVI     E,-1 AND 0FFH   ;INIT CTR (TENS)
+        MVI     E,-1    ; AND 0FFH   ;INIT CTR (TENS)
 FOUTJ:  INR     E       ;ADD ONE
         SUI     10      ;LESS 10
         JP      FOUTJ   ;LOOP
@@ -3640,7 +3649,7 @@ FOUTJ:  INR     E       ;ADD ONE
         MOV     A,D     ;GET DEC EXPON
         ORA     A       ;SET FLAGS
         JP      FOUTK   ;BRIF POS.
-        CPI     -2 AND 0FFH     ;TEST FOR MIN
+        CPI     -2      ; AND 0FFH     ;TEST FOR MIN
         RC              ;RETURN IF LESS THAN -2
         JMP     FOUTL   ;GO AROUND
 FOUTK:  CPI     6       ;TEST IF TOO BIG
@@ -4045,7 +4054,7 @@ FDIV8:  MOV     A,M     ;LOAD BYTE
 GETST:  LXI     D,STRIN ;POINT BUFFER
         MVI     B,0     ;INIT CTR
         MOV     A,M     ;GET THE CHAR
-        CPI     '"'     ;TEST IF LIT TYPE
+        CPI     0x22    ;'"'     ;TEST IF LIT TYPE
         JZ      GETS2   ;BRIF IS
         CPI     27H     ;TEST IF QUOTED LITERAL
         JZ      GETS2   ;BRIF IS
@@ -4127,7 +4136,7 @@ SUBSC   EQU     $
 ;
         PUSH    D       ;SAVE COL
         RST     4       ;ADJUST H,L
-        DB      -4 AND 0FFH     ;BY FOUR
+        DB      -4      ; AND 0FFH     ;BY FOUR
         MOV     D,M     ;GET HI
         DCX     H       ;POINT LO
         MOV     E,M     ;GET LO
@@ -4176,7 +4185,7 @@ SUB4:   DAD     B       ;ADD TO PROD
         POP     H       ;GET ADDR (0,0)
         DAD     D       ;COMPUTE (I,J) RIGHT SIDE
         RST     4       ;ADJUST H,L
-        DB      -4 AND 0FFH
+        DB      -4      ; AND 0FFH
         RET             ;RETURN
 FTEST   EQU     $
 ;
@@ -4261,11 +4270,9 @@ REIN:   LXI     H,IOBUF ;POINT TO INPUT BUFFER
         MVI     A,' '   ;GET SPACE
         CALL    TESTO   ;WRITE TO TERMINAL
 TREAD   EQU     $
-        IF      NOT CPM
-        IN      TTY+1   ;GET TTY STATUS
-        ANI     2       ;TEST IF RXRDY
-        JZ      TREAD   ;LOOP TIL CHAR
-        ENDIF
+        IN      UART5   ;GET TTY STATUS
+        ANI     UART_RX_FULL	;TEST IF RXRDY
+        JZ      TREAD			;LOOP TIL CHAR
         CALL    GETCH   ;GO READ THE CHAR
         MOV     M,A     ;PUT IN BUFFER
         CPI     0AH     ;TEST IF LINE FEED
@@ -4287,49 +4294,37 @@ CR1:    MVI     M,0     ;MARK END
         JZ      REIN    ;BRIF IS (NULL LINE)
         LXI     H,IOBUF+1       ;POINT BEGIN
         RET             ;ELSE, RETURN
-TESTO   EQU     $
-        IF      NOT CPM
-        PUSH    PSW     ;SAVE CHAR
-TEST1:  IN      TTY+1   ;GET STATUS
-        RAR             ;TEST IF TXRDY
-        JNC     TEST1   ;LOOP TILL READY
+
+TESTO:  PUSH    PSW     ;SAVE CHAR
+TEST1:  IN      UART5   ;GET STATUS
+        ANI     UART_TX_EMPTY
+        JZ      TEST1   ;LOOP TILL READY
         POP     PSW     ;GET CHAR
-        OUT     TTY     ;WRITE IT
-        ENDIF
-        IF      CPM
-        PUSH    B       ;BIOS CALLS DESTROYS C,DE
-        PUSH    D
-        PUSH H
-        MOV     C,A     ;OUTPUT BYTE
-        CALL    BTOUT   ;CALL BIOS
-        POP H
-        POP     D       ;RESTORE
-        POP     B
-        ENDIF
-        IF      LARGE   ;SAVE ROOM ONLY IN 8+K VERSIONS
-        DB      0,0,0   ;SAVE ROOM FOR CALL TO USER ROUTINE
-        ENDIF
+        OUT     UART_TX     ;WRITE IT
         RET             ;RETURN
+
 CRLF:   MVI     A,0DH   ;LOAD A CR
         CALL    TESTO   ;WRITE IT
         MVI     A,0AH   ;LF
         CALL    TESTO   ;WRITE IT
-        MVI     A,255   ;GET RUBOUT CHAR
-        MVI     B,0FAH  ;LOAD 255-RUBOUT COUNT
-PAUZ:   CALL    TESTO   ;SEND RUBOUT
-        INR     B       ;INCREMENT COUNT
-        CMP     B       ;COMPARE TO 255
-        JNZ     PAUZ    ;SET ANOTHER RUBOUT
+;        MVI     A,RUBOUT   ;GET RUBOUT CHAR
+;        MVI     B,0FAH  ;LOAD 255-RUBOUT COUNT
+;PAUZ:   CALL    TESTO   ;SEND RUBOUT
+;        INR     B       ;INCREMENT COUNT
+;        CMP     B       ;COMPARE TO 255
+;        JNZ     PAUZ    ;SET ANOTHER RUBOUT
         XRA     A       ;GET A ZERO
         STA     COLUM   ;RESET COLUMN POINTER
         RET             ;RETURN
+
 NOTCR:  CPI     15H     ;TEST IF CONTROL-U
         JNZ     NOTCO   ;BRIF NOT
         CALL    PRCNT   ;GO PRINT ^U
         CALL    CRLF    ;GET CR/LF
         JMP     REIN    ;GO RE-ENTER
-NOTCO:  CPI     7FH     ;TEST IF RUBOUT
-        JNZ     NOTCH   ;BRIF NOT
+
+NOTCO:  CPI     RUBOUT     ;TEST IF RUBOUT 7fh
+        JNZ     NOTBS   ;BRIF NOT
         LDA     TAPES   ;GET PAPER TAPE SW
         RAR             ;TEST IF LOAD
         JC      TREAD   ;IGNORE IF LOAD
@@ -4337,27 +4332,16 @@ NOTCO:  CPI     7FH     ;TEST IF RUBOUT
         MOV     A,M     ;LOAD PREV CHAR
         ORA     A       ;TEST IF BEGIN
         JZ      ECHO    ;BRIF IS
-        MVI     A,'\'   ;BACK SLASH
+        MVI     A,0x5c  ;'\'   ;BACK SLASH
         CALL    TESTO   ;WRITE IT
         MOV     A,M     ;FETCH CHARACTER TO BE DISCARDED
         CALL    TESTO   ;WRITE IT
-        MVI     A,'\'   ;BACK SLASH
+        MVI     A,0x5c  ;'\'   ;BACK SLASH
         CALL    TESTO   ;WRITE IT
         JMP     TREAD   ;GET REPLACEMENT CHARACTER
+
 NOTBS   EQU     $
-        IF      LARGE   ;CONTROL H WORKS ONLY ON 9K VERSION
-        CPI     8       ;TEST FOR ASCII BACKSPACE
-        JNZ     NOTCH   ;BRIF NOT CONTROL H
-        DCX     H       ;POINT PRIOR
-        MOV     A,M     ;FETCH CHARACTER
-        ORA     A       ;TEST FOR BEGINNING
-        JZ      ECHO    ;BRIF IT IS
-        PUSH    H       ;SAVE POSITION
-        LXI     H,RBOUT ;POINT RUBOUT SEQUENCE
-        CALL    TERMM   ;WRITE IT
-        POP     H       ;RESTORE H,L
-        JMP     TREAD   ;GET REPLACEMENT CHARACTER
-        ENDIF
+
 NOTCH:  LDA     TAPES   ;GET PAPER TAPE SWITCH
         RAR             ;FLAG TO CARRY
         JC      ECHO    ;NO ECHO IF TAPE
@@ -4474,26 +4458,11 @@ TSTCC   EQU     $
 ; CANCEL IF CONTROL-C
 ; TOGGLE OUTPUT SUPPRESS SW IF CONTROL-O
 ;
-        IF      NOT CPM
-        IN      TTY+1   ;GET TTY STATUS
-        ANI     2       ;MASK FOR RXRDY
+        IN      UART5   ;GET TTY STATUS
+        ANI     UART_RX_FULL	;TEST IF RXRDY
         RZ              ;RETURN IF NO CHAR
-GETCH:  IN      TTY     ;READ THE CHAR
+GETCH:  IN      UART_RX ;READ THE CHAR
         ANI     7FH     ;TURN OFF PARITY
-        ENDIF
-        IF      CPM
-        ;NOTE: FOLLOWING CLOBBERS REGISTERS,
-        ; PUSH AND POP IF FOUND TO CREATE BUGS.
-        CALL    BTSTAT  ;CALL BIOS
-        RZ              ;RETURN ON NO CHAR
-GETCH:  PUSH    B       ;SAVE REGS - CPM CAN CLOBBER
-        PUSH    D
-        PUSH    H
-        CALL    BTIN    ;CALL BIOS TO INPUT
-        POP     H
-        POP     D
-        POP     B
-        ENDIF
         CPI     3       ;TEST IF CONTROL C
         JNZ     TSTC1   ;BRIF NOT
         CALL    PRCNT   ;GO PRINT ^C
@@ -4590,7 +4559,7 @@ PACK    EQU     $
         LXI     B,0     ;CLEAR B AND C
         MVI     A,4     ;INIT DIGIT COUNTER
         STA     PRSW    ;SAVE A
-PK1:    MOV     A,M     ;GET CHAR
+PK1:    MOV     A,M     ;GET CHAR ### THIS HAPPENS AGAIN IN NUMER
         CALL    NUMER   ;TEST FOR NUMERIC
         RNZ             ;RETURN IF NOT NUMERIC
         ANI     0FH     ;STRIP OFF ZONE
@@ -5089,10 +5058,6 @@ RNDLI:  DB      'RND',0
         DB      'PEEK',0
         DW      PEEK
         DB      0ABH
-        IF      LARGE
-        DB      0,0,0,0 ;ROOM FOR ONE MORE FUNCTION
-        DB      0,0,0,0
-        ENDIF
         DB      0       ;END OF FUNCTION TABLE
 ;PAGE
 ;
@@ -5108,13 +5073,7 @@ NRNDX:  DB      1BH,0ECH
         DB      2BH,1EH
 WHATL:  DB      'WHAT',0
 VERS    EQU     $       ;VERSION MESSAGE
-        IF      LARGE
-        DB      '9K VERS 1.4',0
-RBOUT:  DB      08H,20H,08H,0FEH ;RUBOUT SEQUENCE (9K ONLY)
-        ENDIF
-        IF      NOT LARGE
         DB      '8K VERS 1.4',0
-        ENDIF
 LLINE:  DB      'LINE',0
 TABLI:  DB      'TAB',0
 STEPL:  DB      'STEP',0
@@ -5257,36 +5216,14 @@ TOLIT:  DB      'TO',0
 DEFLI:  DB      'DEF'
 FNLIT:  DB      'FN',0
         DW      RUN
-        IF      CPM
-        DB      'DDT',0
-        DW      DDT
-        DB      'BYE',0
-        DW      BOOT
-        ENDIF
         DB      'POKE',0
         DW      POKE
         DB      'CALL',0
         DW      JUMP
-        IF      LARGE   ;INCLUDE ONLY IN 8K+ VERSION
-        DB      'EDIT',0
-        DW      FIX
-        DB      'CLOAD',0
-        DW      CLOAD
-        DB      'CSAVE',0
-        DW      CSAVE
-        ENDIF
-        IF      HUNTER
-        DB      'BAUD',0
-        DW      BAUD
-        ENDIF
         DB      0       ;END OF TABLE
 ;
 ; DDT COMMAND, CPM ONLY
 ;
-        IF      CPM
-DDT:    RST     7
-        JMP     RDY
-        ENDIF
 ;PAGE
 ;
 FACDE   EQU     $
@@ -5386,54 +5323,137 @@ SEEK2:  CALL    SKP2Z   ;FIND END OF TABLE LITERAL
         JMP     SEEK1   ;CONTINUE SEARCH
 SEEK3:  POP     H       ;RESTORE ORIGINAL STRING
         RET             ;RETURN
-        IF      LARGE   ;ASSEMBLE THE REMAINDAR ONLY FOR 8+K
+
+;
+PEEK    EQU     $
+;
+; STMT: A=PEEK(X). RETURNS DECIMAL VALUE OF MEMORY ADDRESS X.
+;
+        CALL    FACDE   ;GET ADDRESS IN D,E
+        XCHG            ;ADDRESS TO H,L
+        LXI     D,0     ;CLEAR D,E
+        MOV     E,M     ;PUT MEMORY BYTE IN E
+        JMP     BINFL   ;CONVERT D,E TO BINARY AND RETURN
+;
+POKE    EQU     $
+;
+; STMT: POKE <ADDRESS>,<VALUE>.  PUTS IN MEMORY ADDRESS.
+;
+        CALL    EXPR    ;EVALUATE ADDRESS EXPRESSION
+        MOV     A,M     ;LOAD NEXT CHARACTER
+        CPI     ','     ;TEST
+        JNZ     SNERR   ;BRIF ERROR
+        INX     H       ;POINT NEXT
+        PUSH    H       ;SAVE H,L
+        CALL    FACDE   ;PUT ADDRESS IN D,E
+        POP     H       ;RESTORE H,L
+        PUSH    D       ;SAVE ADDRESS
+        CALL    EXPR    ;EVALUATE VALUE EXPRESSION
+        CALL    EOL     ;TEST FOR END OF LINE
+        CALL    FBIN    ;CONVERT FACC TO A REGISTER VALUE
+        POP     H       ;GET D,E ADDRESS IN H,L
+        MOV     M,A     ;MOVE BYTE
+        JMP     RUN     ;CONTINUE
 ;
 ;
-; EDIT COMMAND
-; EDIT <LINE #><DELIMITER><OLD TEXT><DELIMITER><NEW TEXT>
+JUMP    EQU     $
 ;
-FIX:    EQU     $
-        RST     1       ;SKIP BLANKS
-        CALL    PACK    ;GET LINE # IN B,C
-        RST     1       ;SKIP BLANKS
-        SHLD    ADDR2   ;SAVE COMMAND POINTER
-        CALL    LOCAT   ;SEARCH FOR LINE # IN PROGRAM
-        JC      ULERR   ;BRIF NOT FOUND
-        PUSH    H       ;SAVE ADDR OF EXISTING LINE <SOURCE>
-        PUSH    B       ;SAVE LINE #
-        MOV     B,M     ;GET LENGTH OF <SOURCE>
-        XCHG            ;D,E POINT <SOURCE>
-        LXI     H,STRIN ;POINT STRING BUFFER
-        CALL    COPYD   ;<SOURCE> TO STRING BUFFER
-        LDA     STRIN   ;LENGTH OF <SOURCE> TO A
-        SUI     2       ;ADJUST
-        STA     STRIN   ;STORE
-        LXI     D,IOBUF+1       ;POINT BUFFER
-        LHLD    ADDR2   ;FETCH COMMAND POINTER
-        MOV     B,M     ;FETCH <DELIMITER>
+; STMT: CALL <ADDRESS>. EXECUTES CODE AT MEMORY ADDRESS.
 ;
-; FIND LENGTH OF <OLD TEXT>. STORE IT IN IOBUF.
+        CALL    EXPR    ;EVALUATE ADDRESS EXPRESSION
+        CALL    EOL     ;TEST FOR END OF LINE
+        CALL    FACDE   ;CONVERT FACC TO ADDRESS IN D,E
+        LXI     H,RUN   ;MAKE INTO SUBROUTINE
+        PUSH    H
+        XCHG            ;MOVE ADDRESS TO HL
+        PCHL            ;EXECUTE USER'S ROUTINE
+;PAGE
+ROMEN   EQU     $-1
 ;
-        MVI     C,0     ;INITIAL LENGTH
-FIX1:   INX     H       ;POINT NEXT CHARACTER
-        MOV     A,M     ;FETCH
-        ORA     A       ;TEST
-        JZ      SNERR   ;MISSING 2ND <DELIMITER>.
-        CMP     B       ;TEST
-        JZ      FIX2    ;BRIF 2ND <DELIMITER> FOUND
-        INR     C       ;ELSE, BUMP C
-        STAX    D       ;STORE CHARACTER IN IOBUF
-        INX     D       ;BUMP IOBUF POINTER
-        JMP     FIX1    ;CONTINUE
+        ORG     8192+OFFSET    ;RAM STARTS OF 8K BOUNDARY
+;        ORG     2400H+OFFSET   ;RAM STARTS ON 9K BOUNDARY
 ;
-; GET READY TO SEARCH <SOURCE> FOR <OLD TEXT>
+; ALL CODE ABOVE THIS POINT IS READ ONLY AND CAN BE PROM'ED
 ;
-FIX2:   MOV     A,C     ;LENGTH OF <OT> TO A
-        STA     IOBUF   ;STORE
-        SHLD    ADDR2   ;SAVE COMMAND POINTER
-        MVI     A,3     ;SEARCH WILL START IN POS 3.
-        LHLD    PROGE   ;POINT END OF PROGRAM
-        INX     H       ;BUMP TWICE
-        INX     H
-        SHLD    ADDR1   ;SAVE EXPR. STACK POINTER
-        INX     H     
+;
+RAM     EQU     $
+;
+BZERO   EQU     $
+FORNE:  DS      1       ;# ENTRYS IN TABLE (MUST BE HERE)
+        DS      112     ;ROOM FOR 8 NESTS (MUST BE HERE)
+TAPES:  DS      1       ;TAPE SWITCH (MUST BE HERE)
+DIMSW:  DS      1       ;DIM SWITCH (MUST BE HERE)
+OUTSW:  DS      1       ;OUTPUT SWITCH (MUST BE HERE)
+ILSW:   DS      1       ;INPUT LINE SWITCH (MUST BE HERE)
+RUNSW:  DS      1       ;RUN SWITCH(MUST BE HERE)
+EDSW:   DS      1       ;MODE SWITCH(MUST BE HERE)
+EZERO   EQU     $
+;
+LINEN:  DS      5
+IMMED:  DS      82      ;IMMEDIATE COMMAND STORAGE AREA
+IOBUF:  DS      82      ;INPUT/OUTPUT BUFFER
+STRIN:  DS      256     ;STRING BUFFER AREA
+OUTA:   DS      3       ;*** FILLED IN AT RUN TIME
+INDX:   DS      2       ;HOLDS VARIABLE NAME OF FOR/NEXT
+REL:    DS      1       ;HOLDS THE RELATION IN AN IF STMT
+IFTYP:  DS      1       ;HOLDS TYPE CODE OF LEFT SIDE
+TVAR1:  DS      4       ;TEMP STORAGE
+TVAR2:  DS      4       ;DITTO
+TEMP1:  DS      4       ;TEMP STORAGE FOR FUNCTIONS
+TEMP2:  DS      4
+TEMP3:  DS      4
+TEMP4:  DS      4
+TEMP5:  DS      4
+TEMP6:  DS      4
+TEMP7:  DS      4
+LINEL:  DS      2       ;HOLDS MIN LINE NUMBER IN LIST
+LINEH:  DS      2       ;HOLDS MAX LINE NUMBER IN LIST
+PROMP:  DS      1       ;HOLDS PROMPT CHAR
+EXPRS:  DS      2       ;HOLDS ADDR OF EXPRESSION
+ADDR1:  DS      2       ;HOLDS TEMP ADDRESS
+ADDR2:  DS      2       ;HOLDS TEMP ADDRESS
+ADDR3:  DS      2       ;HOLDS STMT ADD DURING EXPR EVAL
+FACC:   DS      4
+FTEMP:  DS      12
+PARCT:  DS      1
+SPCTR:  DS      2
+CMACT:  DS      1       ;COUNT OF COMMAS
+FNARG:  DS      4       ;SYMBOLIC ARG & ADDRESS
+STMT:   DS      2       ;HOLDS ADDR OF CURRENT STATEMENT
+ENDLI:  DS      2       ;HOLDS ADDR OF MULTI STMT PTR
+MULTI:  DS      1       ;SWITCH 0=NO, 1=MULTI STMT LINE
+DEXP:   DS      1
+COLUM:  DS      1       ;CURRENT TTY COLUMN
+RNDX:   DS      2       ;RANDOM VARIABLE STORAGE
+RNDY:   DS      2       ;THE RND<X>,TRND<X>,AND RNDSW
+RNDZ:   DS      2       ;MUST BE KEPT IN ORDER
+RNDS:   DS      2
+TRNDX:  DS      2
+TRNDY:  DS      2
+TRNDZ:  DS      2
+TRNDS:  DS      2
+RNDSW:  DS      1
+FNMOD:  DS      1       ;SWITCH, 0=NOT, <>0 = IN DEF FN
+LINE:   DS      2       ;HOLD ADD OF PREV LINE NUM
+STACK:  DS      2       ;HOLDS ADDR OF START OF RETURN STACK
+PRSW:   DS      1       ;ON=PRINT ENDED WITH , OR ;
+NS:     DS      1       ;HOLDS LAST TYPE (NUMERIC/STRING)
+DATAP:  DS      2       ;ADDRESS OF CURRENT DATA STMT
+DATAB:  DS      2       ;ADDRESS OF DATA POOL
+PROGE:  DS      2       ;ADDRESS OF PROGRAM END
+;
+;
+;
+        DS      1       ;DATA STATEMENT FLAG (MUST BE HERE)
+BEGPR:
+;
+		org $3DD0
+	db "IMSAI 9K BASIC v1.4 0D975B",0
+
+
+		org $3DF7
+	dw ROMEN-BASIC	; data length
+	dw BASIC		; jump to addess
+	dw BASIC		; load address
+	db $0d,$97,$5b	; checksum
+        END

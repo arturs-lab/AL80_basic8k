@@ -173,6 +173,8 @@ RST6:   XTHL            ;SAVE HL, GET ERROR CODE PTR
         PUSH    B
         JMP     ERROR   ;CONTINUE
 ;
+        DB 0,0,0,0
+
         ORG     59+OFFSET      ;LEAVE 3 BYTES FOR DDT
 ;
 RST4A:  MOV     E,A     ;PUT IN LOW

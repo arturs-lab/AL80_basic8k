@@ -235,7 +235,7 @@
 00CF                             ; 
 00CF                             ; PRINT "READY"
 00CF                             ; 
-00CF   21 27 1E               LXI   H,READY   ;POINT READY MSG
+00CF   21 29 1E               LXI   H,READY   ;POINT READY MSG
 00D2   CD BE 19               CALL   TERMM   ;GO PRINT IT
 00D5                             ; 
 00D5                GETCM:    EQU   $   
@@ -274,7 +274,7 @@
 00FD   78                     MOV   A,B   ;GET COUNT
 00FE   32 7C 20               STA   IMMED   ;STORE THE COUNT
 0101   C1                     POP   B   ;GET LINE NUM
-0102   CD 5F 1F               CALL   LOCAT   ;GO FIND REQUESTED LINE NUMBER
+0102   CD 61 1F               CALL   LOCAT   ;GO FIND REQUESTED LINE NUMBER
 0105   E5                     PUSH   H   ;SAVE H,L
 0106   DA 20 01               JC   EDIT5   ;BRIF IF LINE NOT FOUND
 0109   54           EDIT2:    MOV   D,H   ;COPY ADDR
@@ -358,7 +358,7 @@
 0183   23                     INX   H   ;DITTO
 0184   B7                     ORA   A   ;TEST BYTE
 0185   C2 80 01               JNZ   EXEC1   ;CONTINUE
-0188   21 ED 1D               LXI   H,NULLI   ;POINT NO LINE NUM
+0188   21 EF 1D               LXI   H,NULLI   ;POINT NO LINE NUM
 018B   22 89 22               SHLD   LINE   ;SAVE ADDR
 018E   21 7C 20               LXI   H,IMMED   ;POINT START OF CMMD
 0191   C3 43 02               JMP   RUN3   ;GO INTO RUN PROCESSOR
@@ -423,7 +423,7 @@
 01D7   3A 71 20               LDA   TAPES   ;GET PAPER TAPE SWITCH
 01DA   FE 02                  CPI   2   ;TEST FOR SAVE
 01DC   C2 CF 00               JNZ   RDY   ;BRIF NOT
-01DF   21 7A 1E               LXI   H,KEYL   ;POINT "KEY"
+01DF   21 7C 1E               LXI   H,KEYL   ;POINT "KEY"
 01E2   CD BE 19               CALL   TERMM   ;WRITE IT
 01E5   CD F2 01               CALL   HDRTL   ;GO PUT TRAILER
 01E8                             ; 
@@ -491,8 +491,8 @@
 0243   CF           RUN3:     RST   1   ;SKIP BLANKS
 0244   22 52 22     RUN4:     SHLD   ADDR1   ;SAVE ADDR
 0247   CD 3B 1A               CALL   TSTCC   ;GO SEE IF CONTROL-C OR O
-024A   11 4D 1E               LXI   D,JMPTB   ;POINT TO TABLE
-024D   CD 87 1F               CALL   SEEK1   ;GO SEARCH COMMAND TABLE
+024A   11 4F 1E               LXI   D,JMPTB   ;POINT TO TABLE
+024D   CD 89 1F               CALL   SEEK1   ;GO SEARCH COMMAND TABLE
 0250   CA 5B 02               JZ   RUN7   ;BRIF COMMAND NOT FOUND
 0253   E5                     PUSH   H   ;SAVE H,L
 0254   1A                     LDAX   D   ;LOAD LOW BYTE
@@ -622,7 +622,7 @@
 0309   CD AE 1A               CALL   NOTEO   ;ERROR IF END-OF-LINE
 030C   CD B6 1A               CALL   PACK   ;GO GET LINE NUMBER IN B,C
 030F   CD 95 1A               CALL   EOL   ;ERROR IF NOT END-OF-LINE
-0312   CD 5F 1F     GOTO2:    CALL   LOCAT   ;GO SEARCH FOR REQUESTED LINE #
+0312   CD 61 1F     GOTO2:    CALL   LOCAT   ;GO SEARCH FOR REQUESTED LINE #
 0315   DA 04 1C               JC   ULERR   ;BRIF NOT FOUND
 0318   22 70 22               SHLD   STMT   ;SAVE ADDR
 031B   AF                     XRA   A   ;GET A ZERO
@@ -688,7 +688,7 @@
 0376   CA B9 03               JZ   PRIN9   ;BRIF IT IS
 0379   D5                     PUSH   D   ;SAVE D,E
 037A   E5                     PUSH   H   ;SAVE H,L
-037B   11 8A 1D               LXI   D,TABLI   ;POINT LITERAL
+037B   11 8C 1D               LXI   D,TABLI   ;POINT LITERAL
 037E   D7                     RST   2   ;GO SEE IF TAB(XX)
 037F   CA BF 03               JZ   PRINA   ;BRIF IS
 0382   E1                     POP   H   ;ELSE, RESTORE H,L
@@ -784,21 +784,21 @@
 040C   22 52 22               SHLD   ADDR1   ;SAVE ADDR
 040F   DF                     RST   3   ;GO STORE THE VALUE
 0410   E1                     POP   H   ;RESTORE POINTER TO STMT
-0411   11 D3 1E               LXI   D,TOLIT   ;GET LIT ADDR
+0411   11 D5 1E               LXI   D,TOLIT   ;GET LIT ADDR
 0414   D7                     RST   2   ;GO COMPARE
 0415   C2 10 1C               JNZ   SNERR   ;BRIF ERROR
 0418   CD 8C 0F               CALL   EXPR   ;GO EVALUATE TO-EXPR
 041B   E5                     PUSH   H   ;SAVE H,L
 041C   21 27 22               LXI   H,TVAR1   ;POINT "TO" VALUE
 041F   DF                     RST   3   ;SAVE IT
-0420   21 EB 1D               LXI   H,ONE   ;POINT CONSTANT: 1
+0420   21 ED 1D               LXI   H,ONE   ;POINT CONSTANT: 1
 0423   EF                     RST   5   ;LOAD IT
 0424   E1                     POP   H   ;GET H,L
 0425   7E                     MOV   A,M   ;GET THE CHAR
 0426   B7                     ORA   A   ;TEST FOR END OF STATEMENT
 0427   CA 3A 04               JZ   FOR2   ;BRIF NO STEP
 042A   E5                     PUSH   H   ;RE-SAVE
-042B   11 8E 1D               LXI   D,STEPL   ;TEST FOR LIT "STEP"
+042B   11 90 1D               LXI   D,STEPL   ;TEST FOR LIT "STEP"
 042E   D7                     RST   2   ;GO COMPARE
 042F   CA 36 04               JZ   FOR1   ;BRIF STEP
 0432   E1                     POP   H   ;RESTORE H,L
@@ -903,7 +903,7 @@
 04CD   E7                     RST   4   ;ADJUST H,L
 04CE   03                     DB   3   
 04CF   CF                     RST   1   ;SKIP SPACES
-04D0   11 A9 1E               LXI   D,NEXTL   ;POINT "NEXT"
+04D0   11 AB 1E               LXI   D,NEXTL   ;POINT "NEXT"
 04D3   D7                     RST   2   ;SEE IF IT IS A NEXT STMT
 04D4   C2 BE 04               JNZ   FOR9   ;LOOP IF NOT
 04D7   CF                     RST   1   ;SKIP SPACES
@@ -1001,15 +1001,15 @@
 0587   FA 17 02               JM   FALSE   ;BRIF GT
 058A   CA 17 02               JZ   FALSE   ;BRIF ZERO (NOT EQUAL)
 058D   2A 52 22     TRUE:     LHLD   ADDR1   ;GET POINTER TO STATEMENT
-0590   11 D1 1E               LXI   D,GOTOL   ;POINT "GO TO"
+0590   11 D3 1E               LXI   D,GOTOL   ;POINT "GO TO"
 0593   D7                     RST   2   ;GO COMPARE
 0594   CA 02 03               JZ   GOTO   ;BRIF IF ... GOTO NN
 0597   2A 52 22               LHLD   ADDR1   ;GET POINTER TO STATEMENT
-059A   11 B0 1E               LXI   D,GOSBL   ;POINT LITERAL
+059A   11 B2 1E               LXI   D,GOSBL   ;POINT LITERAL
 059D   D7                     RST   2   ;GO COMAPRE
 059E   CA 46 03               JZ   GOSUB   ;BRIF IF ... GOSUB NN
 05A1   2A 52 22               LHLD   ADDR1   ;GET POINTER TO STATEMENT
-05A4   11 93 1D               LXI   D,THENL   ;GET ADDR "THEN"
+05A4   11 95 1D               LXI   D,THENL   ;GET ADDR "THEN"
 05A7   D7                     RST   2   ;GO COMPARE
 05A8   C2 10 1C               JNZ   SNERR   ;BRIF ERROR
 05AB   CD 2B 1B               CALL   NUMER   ;TEST IF NUMERIC
@@ -1263,7 +1263,7 @@
 072D                             ; STMT:  INPUT VAR [, VAR, VAR]
 072D                             ; 
 072D                             ; 
-072D   11 85 1D               LXI   D,LLINE   ;POINT "LINE"
+072D   11 87 1D               LXI   D,LLINE   ;POINT "LINE"
 0730   E5                     PUSH   H   ;SAVE H,L ADDR
 0731   D7                     RST   2   ;GO COMPARE
 0732   CA B1 07               JZ   INPL   ;BRIF EQUAL
@@ -1388,7 +1388,7 @@
 0801   CA 18 1C               JZ   DAERR   ;BRIF OUT OF DATA
 0804   E7                     RST   4   ;ADJUST H,L
 0805   03                     DB   3   
-0806   11 9C 1E               LXI   D,DATAL   ;POINT "DATA"
+0806   11 9E 1E               LXI   D,DATAL   ;POINT "DATA"
 0809   D7                     RST   2   ;COMPARE
 080A   CA 17 08               JZ   READ2   ;BRIF IT IS DATA STMT
 080D   2A 8F 22               LHLD   DATAP   ;GET ADDR START
@@ -1461,7 +1461,7 @@
 087E                             ; 
 087E                             ; 
 087E   CD 95 1A               CALL   EOL   ;POINT END OF LINE
-0881   21 2E 1E               LXI   H,STOPM   ;POINT MESSAGE: "STOP AT LINE "
+0881   21 30 1E               LXI   H,STOPM   ;POINT MESSAGE: "STOP AT LINE "
 0884   CD BE 19               CALL   TERMM   ;GO WRITE IT
 0887   CD F2 1B               CALL   PRLIN   ;GO PRINT LINE NUMBER
 088A   3A 75 20               LDA   RUNSW   ;GET RUN TYPE
@@ -1510,12 +1510,12 @@
 08CC   0D                     DCR   C   ;LESS ONE
 08CD   AF                     XRA   A   ;GET A ZERO
 08CE   32 25 22               STA   REL   ;TURN OFF SWITCH
-08D1   11 D1 1E               LXI   D,GOTOL   ;POINT LITERAL
+08D1   11 D3 1E               LXI   D,GOTOL   ;POINT LITERAL
 08D4   E5                     PUSH   H   ;SAVE H,L ADDRESS
 08D5   D7                     RST   2   ;GO COMPARE
 08D6   CA E7 08               JZ   ON3   ;BRIF ON...GOTO
 08D9   E1                     POP   H   ;ELSE, RESTORE H,L
-08DA   11 B0 1E               LXI   D,GOSBL   ;POINT LITERAL
+08DA   11 B2 1E               LXI   D,GOSBL   ;POINT LITERAL
 08DD   D7                     RST   2   ;GO COMPARE
 08DE   C2 10 1C               JNZ   SNERR   ;BRIF ERROR
 08E1   3E 01                  MVI   A,1   ;GET ON SETTING
@@ -1570,7 +1570,7 @@
 093B   F2 74 09               JP   CHA2   ;BRIF NOT-STRING
 093E   CD 35 1B               CALL   SEARC   ;GET ADDR
 0941   D5                     PUSH   D   ;SAVE IT
-0942   11 D3 1E               LXI   D,TOLIT   ;POINT "TO"
+0942   11 D5 1E               LXI   D,TOLIT   ;POINT "TO"
 0945   D7                     RST   2   ;COMPARE
 0946   C2 10 1C               JNZ   SNERR   ;BRIF ERROR
 0949   CD CA 1B               CALL   VAR   ;GET NEXT VARIABLE
@@ -1612,7 +1612,7 @@
 097B   E7                     RST   4   ;POINT ELEMENT 0,0
 097C   F5                     DB   -11   ; AND 0FFH
 097D   E3                     XTHL      ;SAVE ON STACK
-097E   11 D3 1E               LXI   D,TOLIT   ;POINT "TO"
+097E   11 D5 1E               LXI   D,TOLIT   ;POINT "TO"
 0981   D7                     RST   2   ;COMPARE
 0982   C2 10 1C               JNZ   SNERR   ;BRIF ERROR
 0985   CD CA 1B               CALL   VAR   ;GET NAME
@@ -1778,10 +1778,10 @@
 0A55   F1           SIN1:     POP   PSW   ;COMPLEMENT SIGN FOR EACH PI SUB'D
 0A56   2F                     CMA      ;..
 0A57   F5                     PUSH   PSW   ;..
-0A58   21 A3 1D               LXI   H,PI   ;REDUCE TO -PI<X<0
+0A58   21 A5 1D               LXI   H,PI   ;REDUCE TO -PI<X<0
 0A5B   CD 18 17               CALL   FSUB   
 0A5E   F2 55 0A               JP   SIN1   
-0A61   21 D7 1D               LXI   H,HALFP   ;NOW ADD PI FOR -PI<X<-PI/2
+0A61   21 D9 1D               LXI   H,HALFP   ;NOW ADD PI FOR -PI<X<-PI/2
 0A64   E5                     PUSH   H   
 0A65   CD 43 16               CALL   FADD   
 0A68   F4 86 0C               CP   NEG   ;AND JUST NEGATE FOR -PI/2<X<0
@@ -1803,13 +1803,13 @@
 0A84                             ; 
 0A84                             ; ABOVE ROUTINE WILL APPROX SIN(X) == X FOR X: (-.06,.06)
 0A84                             ; 
-0A84   21 D7 1D     SIN3A:    LXI   H,HALFP   ;POINT PI/2
+0A84   21 D9 1D     SIN3A:    LXI   H,HALFP   ;POINT PI/2
 0A87   CD A7 17               CALL   FDIV   ;COMPUTE X/PI/2
 0A8A   21 33 22               LXI   H,TEMP2   ;POINT T2
 0A8D   DF                     RST   3   ;STORE IT
 0A8E   21 33 22               LXI   H,TEMP2   ;POINT BACK
 0A91   CD 24 17               CALL   FMUL   ;COMPUTE SQUARE
-0A94   21 E7 1D               LXI   H,SINCO   ;POINT CONSTANTS
+0A94   21 E9 1D               LXI   H,SINCO   ;POINT CONSTANTS
 0A97                             ; 
 0A97                             ; EVALUATE POWER SERIES
 0A97                             ; 
@@ -1851,7 +1851,7 @@
 0ABF                             ;     AND THEN COMPUTES SIN(Y).
 0ABF                             ; 
 0ABF                             ; 
-0ABF   21 D7 1D               LXI   H,HALFP   ;COMPUTE PI/2 + X
+0ABF   21 D9 1D               LXI   H,HALFP   ;COMPUTE PI/2 + X
 0AC2   CD 43 16               CALL   FADD   ;GO ADD
 0AC5   C3 4D 0A               JMP   SIN   ;GO COMPUTE SINE
 0AC8                             ; 
@@ -1886,17 +1886,17 @@
 0AE9   CD EF 0A               CALL   ATN1   ;GET POSITIVE ATN
 0AEC   C3 86 0C               JMP   NEG   ;MAKE NEG & RETURN
 0AEF                             ; 
-0AEF   21 EB 1D     ATN1:     LXI   H,ONE   ;POINT: 1
+0AEF   21 ED 1D     ATN1:     LXI   H,ONE   ;POINT: 1
 0AF2   CD 43 16               CALL   FADD   ;GO ADD
 0AF5   21 2F 22               LXI   H,TEMP1   ;POINT SAVE
 0AF8   DF                     RST   3   ;STORE
-0AF9   21 9B 1D               LXI   H,TWO   ;POINT: 2
+0AF9   21 9D 1D               LXI   H,TWO   ;POINT: 2
 0AFC   CD 18 17               CALL   FSUB   ;GO SUBTRACT
 0AFF   21 2F 22               LXI   H,TEMP1   ;POINT SAVED
 0B02   CD A7 17               CALL   FDIV   ;DIVIDE
 0B05   21 33 22               LXI   H,TEMP2   ;POINT SAVE
 0B08   DF                     RST   3   ;SAVE X'=(X-1)/(X+1)
-0B09   21 A7 1D               LXI   H,QTRPI   ;X'+PI/4 -> TEMP1
+0B09   21 A9 1D               LXI   H,QTRPI   ;X'+PI/4 -> TEMP1
 0B0C   CD 43 16               CALL   FADD   
 0B0F   21 2F 22               LXI   H,TEMP1   
 0B12   DF                     RST   3   
@@ -1904,7 +1904,7 @@
 0B14   EF                     RST   5   ;LOAD IT
 0B15   E1                     POP   H   
 0B16   CD 24 17               CALL   FMUL   ;FACC=X"*X"
-0B19   21 D3 1D               LXI   H,ATNCO   ;POINT LIST COEFFICIENTS
+0B19   21 D5 1D               LXI   H,ATNCO   ;POINT LIST COEFFICIENTS
 0B1C   C3 97 0A               JMP   EVPS   ;GO COMPUTE & RETURN
 0B1F                             ; 
 0B1F                LN:       EQU   $   
@@ -1929,27 +1929,27 @@
 0B41   C3 49 0B               JMP   LN2   ;GO AROUND
 0B44   DE 01        LN1:      SBI   1   ;MINUS ONE
 0B46   CD 26 0D               CALL   FDEC   ;CONVERT TO FLOATING POINT
-0B49   21 AF 1D     LN2:      LXI   H,LN2C   ;POINT LN(2)
+0B49   21 B1 1D     LN2:      LXI   H,LN2C   ;POINT LN(2)
 0B4C   CD 24 17               CALL   FMUL   ;MULTIPLY
 0B4F   21 2F 22               LXI   H,TEMP1   ;POINT SAVE AREA
 0B52   DF                     RST   3   ;STORE IT
 0B53   EF                     RST   5   ;GET ORIG X
 0B54   3E 01                  MVI   A,1   ;GET EXPONENT: 1
 0B56   32 58 22               STA   FACC   ;ADJUST TO RANGE (1,2)
-0B59   21 EB 1D               LXI   H,ONE   ;POINT 1
+0B59   21 ED 1D               LXI   H,ONE   ;POINT 1
 0B5C   E5                     PUSH   H   ;SAVE PTR TO ONE
 0B5D   CD 18 17               CALL   FSUB   ;SUBTRACT ONE
 0B60   D1                     POP   D   ;SET TEMP2=1
 0B61   21 33 22               LXI   H,TEMP2   
 0B64   CD 4C 1C               CALL   CPY4D   
-0B67   21 07 1E               LXI   H,LNCO   ;POINT COEFFICIENTS
+0B67   21 09 1E               LXI   H,LNCO   ;POINT COEFFICIENTS
 0B6A   C3 97 0A               JMP   EVPS   ;APPROXIMATE & RETURN
 0B6D                             ; 
 0B6D                             ; X=LOG(X) --- THIS IS LOG BASE 10.
 0B6D                             ; 
 0B6D                LOG:      EQU   $   
 0B6D   CD 1F 0B               CALL   LN   ;COMPUTE NATURAL LOG
-0B70   21 23 1E               LXI   H,LNC   ;POINT LOG(E)
+0B70   21 25 1E               LXI   H,LNC   ;POINT LOG(E)
 0B73   C3 24 17               JMP   FMUL   ;MULTIPLY AND RETURN
 0B76                             ; 
 0B76                EXP:      EQU   $   
@@ -1965,12 +1965,12 @@
 0B7F   CD 90 0B               CALL   EXP1   ;COMPUTE POSITIVE EXP
 0B82   21 2F 22               LXI   H,TEMP1   ;POINT SAVE AREA
 0B85   DF                     RST   3   ;STORE IT
-0B86   21 EB 1D               LXI   H,ONE   ;POINT 1
+0B86   21 ED 1D               LXI   H,ONE   ;POINT 1
 0B89   EF                     RST   5   ;LOAD IT
 0B8A   21 2F 22               LXI   H,TEMP1   ;POINT PREV
 0B8D   C3 A7 17               JMP   FDIV   ;RECIPRICAL AND RETURN
 0B90                             ; 
-0B90   21 0B 1E     EXP1:     LXI   H,LN2E   ;POINT LN BASE 2 OF E
+0B90   21 0D 1E     EXP1:     LXI   H,LN2E   ;POINT LN BASE 2 OF E
 0B93   CD 24 17               CALL   FMUL   ;FACC=X*(LN2E)
 0B96   21 37 22               LXI   H,TEMP3   ;POINT SAVE AREA
 0B99   DF                     RST   3   ;TEMP3=X*LN2E
@@ -1988,7 +1988,7 @@
 0BAF   32 3B 22               STA   TEMP4   ;STORE EXPONENT
 0BB2   3E 80                  MVI   A,80H   ;LOAD CONSTANT
 0BB4   32 3C 22               STA   TEMP4+1   ;STORE AS MANTISSA
-0BB7   21 EB 1D               LXI   H,ONE   ;1 -> TEMP1, TEMP2
+0BB7   21 ED 1D               LXI   H,ONE   ;1 -> TEMP1, TEMP2
 0BBA   EF                     RST   5   
 0BBB   21 2F 22               LXI   H,TEMP1   
 0BBE   DF                     RST   3   
@@ -1996,7 +1996,7 @@
 0BC0   EF                     RST   5   ;LOAD TEMP3=INT(X*LN2E)
 0BC1   21 3F 22               LXI   H,TEMP5   ;GET FACC=FP(X*LN2E)
 0BC4   CD 18 17               CALL   FSUB   
-0BC7   21 1F 1E               LXI   H,EXPCO   ;POINT CONSTANTS
+0BC7   21 21 1E               LXI   H,EXPCO   ;POINT CONSTANTS
 0BCA   CD 97 0A               CALL   EVPS   ;COMPUTE POLYNOMIAL
 0BCD   21 3B 22               LXI   H,TEMP4   ;POINT 2^(INT(X*LN2E))
 0BD0   C3 24 17               JMP   FMUL   ;MULTIPLY,NORMALIZE AND RETURN
@@ -2027,7 +2027,7 @@
 0BE0   E6 80                  ANI   80H   ;ISOLATE SIGN
 0BE2   F6 01        SGN1:     ORI   1   ;CREATE EXPONENT
 0BE4   F5                     PUSH   PSW   ;SAVE IT
-0BE5   21 EB 1D               LXI   H,ONE   ;GET ADDRESS OF CONSTANT 1
+0BE5   21 ED 1D               LXI   H,ONE   ;GET ADDRESS OF CONSTANT 1
 0BE8   EF                     RST   5   ;GO LOAD IT
 0BE9   F1                     POP   PSW   ;RESTORE SIGN
 0BEA   32 58 22               STA   FACC   ;SET THE SIGN
@@ -2052,7 +2052,7 @@
 0BFC   7E           INT2:     MOV   A,M   ;GET EXPONENT AGAIN
 0BFD   B7                     ORA   A   ;TEST SIGN
 0BFE   F2 0B 0C               JP   INT3   ;BRIF POSITIVE OR ZERO
-0C01   21 AB 1D               LXI   H,NEGON   ;POINT CONSTANT: -.9999999
+0C01   21 AD 1D               LXI   H,NEGON   ;POINT CONSTANT: -.9999999
 0C04   CD 43 16               CALL   FADD   ;ADD TO FACC
 0C07   21 58 22               LXI   H,FACC   ;POINT EXPONTENT AGAIN
 0C0A   7E                     MOV   A,M   ;LOAD IT
@@ -2098,9 +2098,9 @@
 0C45                             ; 
 0C45                             ; INITIAL APPROXIMATION 0.41730759 + 0.59016206 * MANTISSA
 0C45                             ; 
-0C45   21 B3 1D               LXI   H,SQC1   ;POINT .59016
+0C45   21 B5 1D               LXI   H,SQC1   ;POINT .59016
 0C48   CD 24 17               CALL   FMUL   ;GO MULTIPLY
-0C4B   21 B7 1D               LXI   H,SQC2   ;PINT .4173
+0C4B   21 B9 1D               LXI   H,SQC2   ;PINT .4173
 0C4E   CD 43 16               CALL   FADD   ;GO ADD
 0C51   21 2F 22               LXI   H,TEMP1   ;POINT SAVE AREA
 0C54   DF                     RST   3   ;GO STORE IT
@@ -2120,7 +2120,7 @@
 0C65   1F                     RAR      ;DIVIDE BY 2
 0C66   32 58 22               STA   FACC   ;STORE IT
 0C69   D0                     RNC      ;RETURN IF EXPON EVEN
-0C6A   21 BB 1D               LXI   H,SQC3   ;ELSE, POINT SQR(2)
+0C6A   21 BD 1D               LXI   H,SQC3   ;ELSE, POINT SQR(2)
 0C6D   C3 24 17               JMP   FMUL   ;GO MULTIPLY AND RETURN
 0C70                             ; 
 0C70                             ; THIS ROUTINE PERFORMS ONE NEWTON ITERATION
@@ -2635,7 +2635,7 @@
 0F04   E5                     PUSH   H   ;SAVE PTR
 0F05   E7                     RST   4   ;ADJUST H,L
 0F06   03                     DB   3   
-0F07   11 1F 1F               LXI   D,DEFLI   ;LITERAL
+0F07   11 21 1F               LXI   D,DEFLI   ;LITERAL
 0F0A   D7                     RST   2   ;GO COMPARE
 0F0B   C2 1D 0F               JNZ   FN3   ;BRIF NOT EQUAL
 0F0E   C5                     PUSH   B   ;SAVE TEST NAME
@@ -2795,18 +2795,18 @@
 1012   CA 6F 10               JZ   LDRND   ;BRIF FND
 1015   E1                     POP   H   ;GET H,L
 1016   E5                     PUSH   H   ;RESAVE
-1017   11 22 1F               LXI   D,FNLIT   ;POINT LITERAL
+1017   11 24 1F               LXI   D,FNLIT   ;POINT LITERAL
 101A   D7                     RST   2   ;GO SEE IF FN X
 101B   CA 4A 10               JZ   FNL   ;BRIF IS
 101E   E1                     POP   H   ;GET H,L
 101F   E5                     PUSH   H   ;RESAVE
-1020   11 98 1D               LXI   D,PILIT   ;POINT LIT
+1020   11 9A 1D               LXI   D,PILIT   ;POINT LIT
 1023   D7                     RST   2   ;GO COMPARE
 1024   CA 81 10               JZ   LDPI   ;BRIF PI
 1027   E1           FUNC0:    POP   H   ;GET H,L
 1028   11 99 1C               LXI   D,FUNCT   ;POINT FUNCTION TABLE
 102B   E5                     PUSH   H   ;SAVE POINTER
-102C   CD 87 1F               CALL   SEEK1   ;GO SEARCH FUNCTION TABLE
+102C   CD 89 1F               CALL   SEEK1   ;GO SEARCH FUNCTION TABLE
 102F   CA 42 10               JZ   FUNC4   ;BRIF FUNCTION NOT FOUND
 1032   1A                     LDAX   D   ;GET A BYTE LOW
 1033   4F                     MOV   C,A   ;SAVE IT
@@ -2849,7 +2849,7 @@
 106F   FE 28        LDRND:    CPI   "("   ;TEST IF RND(X)
 1071   CA 27 10               JZ   FUNC0   ;BRIF IS
 1074   E5                     PUSH   H   ;ELSE, SAVE H,L
-1075   21 EB 1D               LXI   H,ONE   ;USE RANGE (0,1)
+1075   21 ED 1D               LXI   H,ONE   ;USE RANGE (0,1)
 1078   EF                     RST   5   ;LOAD FACC
 1079   CD 90 0C               CALL   RND   ;GO GET RANDOM NUMBER
 107C   E1                     POP   H   ;RESTORE H,L
@@ -2859,7 +2859,7 @@
 1082   D1                     POP   D   ;DUMMY STACK POP
 1083   F5                     PUSH   PSW   ;SAVE STATUS
 1084   E5                     PUSH   H   ;SAVE H,L
-1085   11 A3 1D               LXI   D,PI   ;GET ADDRESS OF 3.1415
+1085   11 A5 1D               LXI   D,PI   ;GET ADDRESS OF 3.1415
 1088   C3 EA 0F               JMP   LDV   ;GO ACT LIKE VARIABLE
 108B   D1           LDFNC:    POP   D   ;POP THE STACK
 108C   EB                     XCHG      ;FLIP/FLOP
@@ -3328,13 +3328,13 @@
 13C9   21 2F 22               LXI   H,TEMP1   ;POINT AREA
 13CC   DF                     RST   3   ;SAVE THE ARG
 13CD   C3 B8 13               JMP   EDM2A   ;CONTINUE
-13D0   CD 36 1F     EDM4:     CALL   FACDE   ;CONVERT FACC TO D,E
+13D0   CD 38 1F     EDM4:     CALL   FACDE   ;CONVERT FACC TO D,E
 13D3   D5                     PUSH   D   ;PUT D,E TO B,C
 13D4   C1                     POP   B   
 13D5   C5                     PUSH   B   ;SAVE COL
 13D6   21 2F 22               LXI   H,TEMP1   ;POINT 2ND ARGUMENT
 13D9   EF                     RST   5   ;LOAD IT IN FACC
-13DA   CD 36 1F               CALL   FACDE   ;CONVERT TO D,E
+13DA   CD 38 1F               CALL   FACDE   ;CONVERT TO D,E
 13DD   C1                     POP   B   ;GET COL
 13DE   AF                     XRA   A   ;GET A ZERO
 13DF   32 72 20               STA   DIMSW   ;RESET SW
@@ -3437,7 +3437,7 @@
 1479   F1                     POP   PSW   ;RESTORE COUNT
 147A   C8           FIN5:     RZ      ;RETURN IF ZERO
 147B   E5                     PUSH   H   ;SAVE H,L
-147C   21 9F 1D               LXI   H,TEN   ;POINT CONSTANT: 10
+147C   21 A1 1D               LXI   H,TEN   ;POINT CONSTANT: 10
 147F   FA 8C 14               JM   FIN7   ;BRIF DIVIDE NEEDED
 1482   3D                     DCR   A   ;DECR COUNT
 1483   F5                     PUSH   PSW   ;SAVE COUNT
@@ -3557,7 +3557,7 @@
 1530   F2 49 15               JP   FOUT6   ;BRIF IN RANGE
 1533   21 75 22     FOUT4:    LXI   H,DEXP   ;POINT DEC.EXP
 1536   34                     INR   M   ;INCR IT
-1537   21 9F 1D               LXI   H,TEN   ;POINT CONST: 10
+1537   21 A1 1D               LXI   H,TEN   ;POINT CONST: 10
 153A   F2 43 15               JP   FOUT5   ;BRIF POS.
 153D   CD 24 17               CALL   FMUL   ;MULTIPLY
 1540   C3 28 15               JMP   FOUT3   ;LOOP
@@ -4456,7 +4456,7 @@
 1A4C   3A 76 20               LDA   EDSW   ;GET MODE SW
 1A4F   B7                     ORA   A   ;TEST IT
 1A50   C2 E8 01               JNZ   KEY   ;**;BRIF COMMAND MODE
-1A53   21 2E 1E               LXI   H,STOPM   ;POINT MSG
+1A53   21 30 1E               LXI   H,STOPM   ;POINT MSG
 1A56   CD BE 19               CALL   TERMM   ;GO PRINT IT
 1A59   CD F2 1B               CALL   PRLIN   ;GO PRINT LINE
 1A5C   C3 E8 01               JMP   KEY   ;GOTO READY
@@ -4857,7 +4857,7 @@
 1C32                             ; 
 1C32   CD BE 19     ERROR:    CALL   TERMM   ;PRINT "XX"
 1C35   E5                     PUSH   H   ;SAVE RETURN
-1C36   21 3D 1E               LXI   H,ERRMS   ;PRINT "ERROR IN LINE"
+1C36   21 3F 1E               LXI   H,ERRMS   ;PRINT "ERROR IN LINE"
 1C39   CD BE 19               CALL   TERMM   
 1C3C   CD F2 1B               CALL   PRLIN   ;PRINT LINE #
 1C3F   E1                     POP   H   
@@ -4914,7 +4914,7 @@
 1C67                             ; 
 1C67   E5                     PUSH   H   ;SAVE H,L
 1C68   D5                     PUSH   D   ;SAVE D,E
-1C69   CD 36 1F               CALL   FACDE   ;CONVERT FACC TO D,E
+1C69   CD 38 1F               CALL   FACDE   ;CONVERT FACC TO D,E
 1C6C   AF                     XRA   A   ;ZERO A
 1C6D   B2                     ORA   D   ;TEST HIGH VALUE
 1C6E   C2 72 1C               JNZ   FBIN1   ;BRIF NOT ZERO
@@ -5043,7 +5043,7 @@
 1D57   5D 0E                  DW   INSTR   
 1D59   BB                     DB   0BBH   
 1D5A   50 45 45 4B 00         DB   "PEEK",0   
-1D5F   AC 1F                  DW   PEEK   
+1D5F   AE 1F                  DW   PEEK   
 1D61   AB                     DB   0ABH   
 1D62   00                     DB   0   ;END OF FUNCTION TABLE
 1D63                             ;PAGE
@@ -5060,302 +5060,302 @@
 1D72   2B 1E                  DB   2BH,1EH   
 1D74   57 48 41 54 00 WHATL:   DB   "WHAT",0   
 1D79                VERS:     EQU   $   ;VERSION MESSAGE
-1D79   38 4B 20 56 45 52 53 20 31 2E 34 00 DB   "8K VERS 1.4",0   
-1D85   4C 49 4E 45 00 LLINE:   DB   "LINE",0   
-1D8A   54 41 42 00  TABLI:    DB   "TAB",0   
-1D8E   53 54 45 50 00 STEPL:   DB   "STEP",0   
-1D93   54 48 45 4E 00 THENL:   DB   "THEN",0   
-1D98   50 49 00     PILIT:    DB   "PI",0   
-1D9B   02 80 00 00  TWO:      DB   02H,80H,00H,00H   ;CONSTANT:  2
-1D9F   04 A0 00 00  TEN:      DB   04H,0A0H,00H,00H   ;CONSTANT:  10
-1DA3   02 C9 0F D7  PI:       DB   02H,0C9H,0FH,0D7H   ;CONSTANT:  3.141593
-1DA7   00 C9 0F D7  QTRPI:    DB   00H,0C9H,0FH,0D7H   ;CONSTANT:  0.7853892
-1DAB   80 FF FF FF  NEGON:    DB   80H,0FFH,0FFH,0FFH   ;CONSTANT: -0.9999999
-1DAF   00 B1 72 16  LN2C:     DB   00H,0B1H,72H,16H   ;CONSTANT:  0.6931472
-1DB3   00 97 14 EB  SQC1:     DB   00H,97H,14H,0EBH   ;CONSTANT:  0.59016206
-1DB7   7F D5 A9 56  SQC2:     DB   7FH,0D5H,0A9H,56H   ;CONSTANT:  0.41730759
-1DBB                             ;PAGE
-1DBB                             ; 
-1DBB                             ; THE FOLLOWING CONSTANTS MUST BE IN THIS ORDER ***********
-1DBB                             ; 
-1DBB                             ;       CONSTANT WITH EXPONENT OF 1
-1DBB                             ;       COEFFICIENT OF FIRST TERM
-1DBB                             ;       ...
-1DBB                             ;       COEEFICIENT OF NTH TERM
-1DBB                             ; 
-1DBB                             ; SINCE ALL COEFFICIENTS ARE LESS THAN 1,
-1DBB                             ; THE ITERATION LOOP USES THE
-1DBB                             ; CONSTANT WITH EXPONENT 1 TO TERMINATE THE EVALUATION.
-1DBB                             ; 
-1DBB   01 B5 04 F3  SQC3:     DB   01H,0B5H,04H,0F3H   ;CONSTANT:  1.41421356
-1DBF   FF AA 95 BC            DB   0FFH,0AAH,95H,0BCH   ;CONSTANT: -0.3331738
-1DC3   7E CA D5 20            DB   7EH,0CAH,0D5H,20H   ;CONSTANT:  0.1980787
-1DC7   FE 87 82 D6            DB   0FEH,87H,82H,0D6H   ;CONSTANT: -0.1323351
-1DCB   7D A3 13 1C            DB   7DH,0A3H,13H,1CH   ;CONSTANT:  0.07962632
-1DCF   FC 89 A6 B8            DB   0FCH,89H,0A6H,0B8H   ;CONSTANT: -0.03360627
-1DD3   79 DF 3A 9E  ATNCO:    DB   79H,0DFH,3AH,9EH   ;CONSTANT:  0.006812411
-1DD7                             ; 
-1DD7   01 C9 0F D7  HALFP:    DB   01H,0C9H,0FH,0D7H   ;CONSTANT:  1.570796
-1DDB   80 A5 5D DE            DB   80H,0A5H,5DH,0DEH   ;CONSTANT: -0.64596371
-1DDF   7D A3 34 55            DB   7DH,0A3H,34H,55H   ;CONSTANT:  0.076589679
-1DE3   F9 99 38 60            DB   0F9H,99H,38H,60H   ;CONSTANT: -0.0046737656
-1DE7   74 9E D7 B6  SINCO:    DB   74H,9EH,0D7H,0B6H   ;CONSTANT:  0.00015148419
-1DEB                             ; 
-1DEB   01 80        ONE:      DB   001H,080H   
-1DED   00 00        NULLI:    DB   00H,00H   ;CONSTANT:  1.0
-1DEF   00 FF FE C1            DB   00H,0FFH,0FEH,0C1H   ;CONSTANT:  0.99998103
-1DF3   FF FF BA B0            DB   0FFH,0FFH,0BAH,0B0H   ;CONSTANT: -0.4994712
-1DF7   7F A8 0E 2B            DB   7FH,0A8H,0EH,2BH   ;CONSTANT:  0.3282331
-1DFB   FE E7 4B 55            DB   0FEH,0E7H,4BH,55H   ;CONSTANT: -0.2258733
-1DFF   7E 89 DE E3            DB   7EH,89H,0DEH,0E3H   ;CONSTANT:  0.134693
-1E03   FC E1 C5 78            DB   0FCH,0E1H,0C5H,078H   ;CONSTANT: -0.05511996
-1E07   7A B0 3F AE  LNCO:     DB   7AH,0B0H,3FH,0AEH   ;CONSTANT:  0.01075737
-1E0B                             ; 
-1E0B   01 B8 AA 3B  LN2E:     DB   001H,0B8H,0AAH,03BH   ;CONSTANT:  1.44269504
-1E0F   00 B1 6F E6            DB   000H,0B1H,06FH,0E6H   ;C=.69311397
-1E13   7E F6 2F 70            DB   07EH,0F6H,02FH,070H   ;C=.24041548
-1E17   7C E1 C2 AE            DB   07CH,0E1H,0C2H,0AEH   ;C=.05511732
-1E1B   7A A0 BB 7E            DB   07AH,0A0H,0BBH,07EH   ;C=.00981033
-1E1F   77 CA 09 CB  EXPCO:    DB   077H,0CAH,009H,0CBH   ;C=.00154143
-1E23                             ; 
-1E23   7F DE 5B D0  LNC:      DB   07FH,0DEH,05BH,0D0H   ;C=LOG BASE 10 OF E
-1E27                READY:    EQU   $   
-1E27   FD                     DB   0FDH   
-1E28   52 45 41 44 59 00      DB   "READY",0   
-1E2E                STOPM:    EQU   $   
-1E2E   FD                     DB   0FDH   
-1E2F   53 54 4F 50 20 41 54 20 4C 49 4E 45 20 FE DB   "STOP AT LINE ",254   
-1E3D   20 45 52 52 4F 52 20 49 4E 20 4C 49 4E 45 20 FE ERRMS:   DB   " ERROR IN LINE ",0FEH   
-1E4D                TTY:      EQU   2   
-1E4D                             ;PAGE
-1E4D                             ; 
-1E4D                             ; VERB (STATEMENT/COMMAND) TABLE
-1E4D                             ; FORMAT IS: DB "VERB",0
-1E4D                             ;            DW ADDR
-1E4D                             ;            DB "NEXT VERB",0
-1E4D                             ;            ETC
-1E4D                             ;  END OF TABLE IS MARKED BY DB 0
-1E4D                             ; 
-1E4D                JMPTB:    EQU   $   
-1E4D   4C 49 53 54 00         DB   "LIST",0   
-1E52   6E 02                  DW   LIST   
-1E54   52 55 4E 00            DB   "RUN",0   
-1E58   00 02                  DW   RUNCM   
-1E5A   58 45 51 00            DB   "XEQ",0   
-1E5E   05 02                  DW   XEQ   
-1E60   4E 45 57 00            DB   "NEW",0   
-1E64   94 01                  DW   NEW   
-1E66   43 4F 4E 00            DB   "CON",0   
-1E6A   FA 02                  DW   CONTI   
-1E6C   54 41 50 45 00         DB   "TAPE",0   
-1E71   CA 01                  DW   TAPE   
-1E73   53 41 56 45 00         DB   "SAVE",0   
-1E78   61 02                  DW   SAVE   
-1E7A   4B 45 59 00  KEYL:     DB   "KEY",0   
-1E7E   E8 01                  DW   KEY   
-1E80   46 52 45 00            DB   "FRE",0   
-1E84   AC 01                  DW   FREE   
-1E86   49 46 00               DB   "IF",0   
-1E89   F5 04                  DW   IFSTM   
-1E8B   52 45 41 44 00         DB   "READ",0   
-1E90   ED 07                  DW   READ   
-1E92   52 45 53 54 4F 52 45 00 DB   "RESTORE",0   
-1E9A   22 03                  DW   RESTO   
-1E9C   44 41 54 41 00 DATAL:   DB   "DATA",0   
-1EA1   17 02                  DW   RUN   
-1EA3   46 4F 52 00            DB   "FOR",0   
-1EA7   F1 03                  DW   FOR   
-1EA9   4E 45 58 54 00 NEXTL:   DB   "NEXT",0   
-1EAE   9E 06                  DW   NEXT   
-1EB0   47 4F 53 55 42 00 GOSBL:   DB   "GOSUB",0   
-1EB6   46 03                  DW   GOSUB   
-1EB8   52 45 54 55 52 4E 00   DB   "RETURN",0   
-1EBF   2E 03                  DW   RETUR   
-1EC1   49 4E 50 55 54 00      DB   "INPUT",0   
-1EC7   2D 07                  DW   INPUT   
-1EC9   50 52 49 4E 54 00      DB   "PRINT",0   
-1ECF   61 03                  DW   PRINT   
-1ED1   47 4F        GOTOL:    DB   "GO"   
-1ED3   54 4F 00     TOLIT:    DB   "TO",0   
-1ED6   02 03                  DW   GOTO   
-1ED8   4C 45 54 00            DB   "LET",0   
-1EDC   FD 05                  DW   LET   
-1EDE   53 54 4F 50 00         DB   "STOP",0   
-1EE3   7E 08                  DW   STOP   
-1EE5   45 4E 44 00            DB   "END",0   
-1EE9   D7 01                  DW   ENDIT   
-1EEB   52 45 4D 00            DB   "REM",0   
-1EEF   17 02                  DW   RUN   
-1EF1   21 00                  DB   "!",0   
-1EF3   17 02                  DW   RUN   
-1EF5   3F 00                  DB   "?",0   
-1EF7   61 03                  DW   PRINT   
-1EF9   52 41 4E 44 4F 4D 49 5A 45 00 DB   "RANDOMIZE",0   
-1F03   AB 08                  DW   RANDO   
-1F05   4F 4E 00               DB   "ON",0   
-1F08   C1 08                  DW   ON   
-1F0A   4F 55 54 00            DB   "OUT",0   
-1F0E   56 08                  DW   OUTP   
-1F10   44 49 4D 00            DB   "DIM",0   
-1F14   BD 09                  DW   DIM   
-1F16   43 48 41 4E 47 45 00   DB   "CHANGE",0   
-1F1D   36 09                  DW   CHANG   
-1F1F   44 45 46     DEFLI:    DB   "DEF"   
-1F22   46 4E 00     FNLIT:    DB   "FN",0   
-1F25   17 02                  DW   RUN   
-1F27   50 4F 4B 45 00         DB   "POKE",0   
-1F2C   B7 1F                  DW   POKE   
-1F2E   43 41 4C 4C 00         DB   "CALL",0   
-1F33   D5 1F                  DW   JUMP   
-1F35   00                     DB   0   ;END OF TABLE
-1F36                             ; 
-1F36                             ; DDT COMMAND, CPM ONLY
-1F36                             ; 
-1F36                             ;PAGE
-1F36                             ; 
-1F36                FACDE:    EQU   $   
-1F36                             ; 
-1F36                             ; THIS ROUTINE CONVERTS THE FACC TO AN ADDRESS IN D,E
-1F36                             ; 
-1F36   CD EE 0B               CALL   INT   ;INTEGERIZE THE FACC
-1F39   3A 58 22               LDA   FACC   ;GET THE EXPONENT
-1F3C   B7                     ORA   A   ;TEST IT
-1F3D   FA 28 1C               JM   OVERR   ;BRIF NEGATIVE ADDRESS
-1F40   D6 10                  SUI   16   ;SUBTRACT MAX EXPONENT
-1F42   CA 58 1F               JZ   FDE2   ;BRIF EQUAL MAX
-1F45   F2 28 1C               JP   OVERR   ;BRIF GREATER THAN 64K
-1F48   2F                     CMA      ;2'S COMPLIMENT OF A YIELDS..
-1F49   3C                     INR   A   ;16-A
-1F4A   4F                     MOV   C,A   ;SAVE SHIFT COUNT
-1F4B   AF           FDE1:     XRA   A   ;CLEAR CARRY
-1F4C   21 59 22               LXI   H,FACC+1   ;POINT MANTISSA
-1F4F   06 02                  MVI   B,2   ;WORDS TO SHIFT
-1F51   CD 07 19               CALL   FSHFT   ;GO SHIFT FACC+1 AND FACC+2
-1F54   0D                     DCR   C   ;REDUCE COUNT
-1F55   C2 4B 1F               JNZ   FDE1   ;LOOP TILL COMPLETE
-1F58   21 59 22     FDE2:     LXI   H,FACC+1   ;POINT HIGH BYTE
-1F5B   56                     MOV   D,M   ;LOAD D
-1F5C   23                     INX   H   ;POINT LOW BYTE
-1F5D   5E                     MOV   E,M   ;LOADE E
-1F5E   C9                     RET      ;RETURN
-1F5F                             ; 
-1F5F                             ; 
-1F5F                LOCAT:    EQU   $   
-1F5F                             ; 
-1F5F                             ; THIS ROUTINE SEARCHES FOR A LINE IN THE PROGRAM FILE.
-1F5F                             ; Z SET, C RESET==>LINE FOUND. ADDRESS IS IN H,L
-1F5F                             ; C SET, Z RESET==>NOT FOUND. H,L POINT TO NEXT LINE
-1F5F                             ; C SET, Z SET==>NOT FOUND. H,L POINT AT END OF PROGRAM
-1F5F                             ; 
-1F5F   21 96 22               LXI   H,BEGPR   ;POINT START
-1F62   7E           FIND1:    MOV   A,M   ;FETCH LENGTH OF LINE
-1F63   E5                     PUSH   H   ;SAVE POINTER
-1F64   B7                     ORA   A   ;TEST
-1F65   CA 84 1F               JZ   FIND3   ;BRIF END
-1F68   23                     INX   H   ;POINT LINE #
-1F69   7E                     MOV   A,M   ;FETCH HI #
-1F6A   B8                     CMP   B   ;COMPARE TO REQUESTED
-1F6B   DA 7C 1F               JC   FIND2   ;BRIF LOW
-1F6E   C2 84 1F               JNZ   FIND3   ;BRIF PAST AND NOT FOUND
-1F71   23                     INX   H   ;POINT LO #
-1F72   7E                     MOV   A,M   ;FETCH IT
-1F73   B9                     CMP   C   ;COMPARE TO REQUESTED
-1F74   DA 7C 1F               JC   FIND2   ;BRIF LOW
-1F77   C2 84 1F               JNZ   FIND3   ;BRIF PAST AND NOT FOUND
-1F7A   E1                     POP   H   ;POINT BEGIN IF MATCH
-1F7B   C9                     RET      ;RETURN
-1F7C                             ; 
-1F7C                             ; BUMP H,L TO NEXT LINE
-1F7C                             ; 
-1F7C   E1           FIND2:    POP   H   ;POINT START OF LINE
-1F7D   5E                     MOV   E,M   ;LENGHT TO E
-1F7E   16 00                  MVI   D,0   ;CLEAR D
-1F80   19                     DAD   D   ;BUMP H,L
-1F81   C3 62 1F               JMP   FIND1   ;CONTINUE
-1F84                             ; 
-1F84                             ; LINE NOT FOUND
-1F84                             ; 
-1F84   37           FIND3:    STC      ;SET CARRY
-1F85   E1                     POP   H   ;POINT LINE JUST PAST REQUESTED
-1F86   C9                     RET      ;RETURN
-1F87                             ; 
-1F87                             ; 
-1F87                SEEK:     EQU   $   
-1F87                             ; 
-1F87                             ;  THIS CODE FINDS AN ENTRY IN THE TABLE POINTED TO BY D,E.
-1F87                             ;  THE SOUGHT ENTRY IS POINTED TO BY H,L.
-1F87                             ; 
-1F87   E5           SEEK1:    PUSH   H   ;SAVE ADDRESS OF STRING
-1F88   1A                     LDAX   D   ;GET BYTE FROM TABLE
-1F89   B7                     ORA   A   ;TEST IT
-1F8A   CA AA 1F               JZ   SEEK3   ;BRIF END OF TABLE
-1F8D   D7                     RST   2   ;COMPARE
-1F8E   C2 9A 1F               JNZ   SEEK2   ;BRIF NOT FOUND
-1F91   E3                     XTHL      ;PUT CURRENT H,L ON STACK
-1F92   CD FA 1A               CALL   SKP2Z   ;FIND END TO LITERAL IN TABLE
-1F95   13                     INX   D   ;POINT LOW BYTE
-1F96   E1                     POP   H   ;RESTORE LINE POINTER
-1F97   3C                     INR   A   ;PUT 1 IN A
-1F98   B7                     ORA   A   ;RESET Z BIT
-1F99   C9                     RET      ;RETURN
-1F9A   CD FA 1A     SEEK2:    CALL   SKP2Z   ;FIND END OF TABLE LITERAL
-1F9D   13                     INX   D   ; 
-1F9E   13                     INX   D   ;POINT NEXT LIT IN TABLE
+1D79   0D 0A 38 4B 20 56 45 52 53 20 31 2E 34 00 DB   $0d,$0a,"8K VERS 1.4",0   
+1D87   4C 49 4E 45 00 LLINE:   DB   "LINE",0   
+1D8C   54 41 42 00  TABLI:    DB   "TAB",0   
+1D90   53 54 45 50 00 STEPL:   DB   "STEP",0   
+1D95   54 48 45 4E 00 THENL:   DB   "THEN",0   
+1D9A   50 49 00     PILIT:    DB   "PI",0   
+1D9D   02 80 00 00  TWO:      DB   02H,80H,00H,00H   ;CONSTANT:  2
+1DA1   04 A0 00 00  TEN:      DB   04H,0A0H,00H,00H   ;CONSTANT:  10
+1DA5   02 C9 0F D7  PI:       DB   02H,0C9H,0FH,0D7H   ;CONSTANT:  3.141593
+1DA9   00 C9 0F D7  QTRPI:    DB   00H,0C9H,0FH,0D7H   ;CONSTANT:  0.7853892
+1DAD   80 FF FF FF  NEGON:    DB   80H,0FFH,0FFH,0FFH   ;CONSTANT: -0.9999999
+1DB1   00 B1 72 16  LN2C:     DB   00H,0B1H,72H,16H   ;CONSTANT:  0.6931472
+1DB5   00 97 14 EB  SQC1:     DB   00H,97H,14H,0EBH   ;CONSTANT:  0.59016206
+1DB9   7F D5 A9 56  SQC2:     DB   7FH,0D5H,0A9H,56H   ;CONSTANT:  0.41730759
+1DBD                             ;PAGE
+1DBD                             ; 
+1DBD                             ; THE FOLLOWING CONSTANTS MUST BE IN THIS ORDER ***********
+1DBD                             ; 
+1DBD                             ;       CONSTANT WITH EXPONENT OF 1
+1DBD                             ;       COEFFICIENT OF FIRST TERM
+1DBD                             ;       ...
+1DBD                             ;       COEEFICIENT OF NTH TERM
+1DBD                             ; 
+1DBD                             ; SINCE ALL COEFFICIENTS ARE LESS THAN 1,
+1DBD                             ; THE ITERATION LOOP USES THE
+1DBD                             ; CONSTANT WITH EXPONENT 1 TO TERMINATE THE EVALUATION.
+1DBD                             ; 
+1DBD   01 B5 04 F3  SQC3:     DB   01H,0B5H,04H,0F3H   ;CONSTANT:  1.41421356
+1DC1   FF AA 95 BC            DB   0FFH,0AAH,95H,0BCH   ;CONSTANT: -0.3331738
+1DC5   7E CA D5 20            DB   7EH,0CAH,0D5H,20H   ;CONSTANT:  0.1980787
+1DC9   FE 87 82 D6            DB   0FEH,87H,82H,0D6H   ;CONSTANT: -0.1323351
+1DCD   7D A3 13 1C            DB   7DH,0A3H,13H,1CH   ;CONSTANT:  0.07962632
+1DD1   FC 89 A6 B8            DB   0FCH,89H,0A6H,0B8H   ;CONSTANT: -0.03360627
+1DD5   79 DF 3A 9E  ATNCO:    DB   79H,0DFH,3AH,9EH   ;CONSTANT:  0.006812411
+1DD9                             ; 
+1DD9   01 C9 0F D7  HALFP:    DB   01H,0C9H,0FH,0D7H   ;CONSTANT:  1.570796
+1DDD   80 A5 5D DE            DB   80H,0A5H,5DH,0DEH   ;CONSTANT: -0.64596371
+1DE1   7D A3 34 55            DB   7DH,0A3H,34H,55H   ;CONSTANT:  0.076589679
+1DE5   F9 99 38 60            DB   0F9H,99H,38H,60H   ;CONSTANT: -0.0046737656
+1DE9   74 9E D7 B6  SINCO:    DB   74H,9EH,0D7H,0B6H   ;CONSTANT:  0.00015148419
+1DED                             ; 
+1DED   01 80        ONE:      DB   001H,080H   
+1DEF   00 00        NULLI:    DB   00H,00H   ;CONSTANT:  1.0
+1DF1   00 FF FE C1            DB   00H,0FFH,0FEH,0C1H   ;CONSTANT:  0.99998103
+1DF5   FF FF BA B0            DB   0FFH,0FFH,0BAH,0B0H   ;CONSTANT: -0.4994712
+1DF9   7F A8 0E 2B            DB   7FH,0A8H,0EH,2BH   ;CONSTANT:  0.3282331
+1DFD   FE E7 4B 55            DB   0FEH,0E7H,4BH,55H   ;CONSTANT: -0.2258733
+1E01   7E 89 DE E3            DB   7EH,89H,0DEH,0E3H   ;CONSTANT:  0.134693
+1E05   FC E1 C5 78            DB   0FCH,0E1H,0C5H,078H   ;CONSTANT: -0.05511996
+1E09   7A B0 3F AE  LNCO:     DB   7AH,0B0H,3FH,0AEH   ;CONSTANT:  0.01075737
+1E0D                             ; 
+1E0D   01 B8 AA 3B  LN2E:     DB   001H,0B8H,0AAH,03BH   ;CONSTANT:  1.44269504
+1E11   00 B1 6F E6            DB   000H,0B1H,06FH,0E6H   ;C=.69311397
+1E15   7E F6 2F 70            DB   07EH,0F6H,02FH,070H   ;C=.24041548
+1E19   7C E1 C2 AE            DB   07CH,0E1H,0C2H,0AEH   ;C=.05511732
+1E1D   7A A0 BB 7E            DB   07AH,0A0H,0BBH,07EH   ;C=.00981033
+1E21   77 CA 09 CB  EXPCO:    DB   077H,0CAH,009H,0CBH   ;C=.00154143
+1E25                             ; 
+1E25   7F DE 5B D0  LNC:      DB   07FH,0DEH,05BH,0D0H   ;C=LOG BASE 10 OF E
+1E29                READY:    EQU   $   
+1E29   FD                     DB   0FDH   
+1E2A   52 45 41 44 59 00      DB   "READY",0   
+1E30                STOPM:    EQU   $   
+1E30   FD                     DB   0FDH   
+1E31   53 54 4F 50 20 41 54 20 4C 49 4E 45 20 FE DB   "STOP AT LINE ",254   
+1E3F   20 45 52 52 4F 52 20 49 4E 20 4C 49 4E 45 20 FE ERRMS:   DB   " ERROR IN LINE ",0FEH   
+1E4F                TTY:      EQU   2   
+1E4F                             ;PAGE
+1E4F                             ; 
+1E4F                             ; VERB (STATEMENT/COMMAND) TABLE
+1E4F                             ; FORMAT IS: DB "VERB",0
+1E4F                             ;            DW ADDR
+1E4F                             ;            DB "NEXT VERB",0
+1E4F                             ;            ETC
+1E4F                             ;  END OF TABLE IS MARKED BY DB 0
+1E4F                             ; 
+1E4F                JMPTB:    EQU   $   
+1E4F   4C 49 53 54 00         DB   "LIST",0   
+1E54   6E 02                  DW   LIST   
+1E56   52 55 4E 00            DB   "RUN",0   
+1E5A   00 02                  DW   RUNCM   
+1E5C   58 45 51 00            DB   "XEQ",0   
+1E60   05 02                  DW   XEQ   
+1E62   4E 45 57 00            DB   "NEW",0   
+1E66   94 01                  DW   NEW   
+1E68   43 4F 4E 00            DB   "CON",0   
+1E6C   FA 02                  DW   CONTI   
+1E6E   54 41 50 45 00         DB   "TAPE",0   
+1E73   CA 01                  DW   TAPE   
+1E75   53 41 56 45 00         DB   "SAVE",0   
+1E7A   61 02                  DW   SAVE   
+1E7C   4B 45 59 00  KEYL:     DB   "KEY",0   
+1E80   E8 01                  DW   KEY   
+1E82   46 52 45 00            DB   "FRE",0   
+1E86   AC 01                  DW   FREE   
+1E88   49 46 00               DB   "IF",0   
+1E8B   F5 04                  DW   IFSTM   
+1E8D   52 45 41 44 00         DB   "READ",0   
+1E92   ED 07                  DW   READ   
+1E94   52 45 53 54 4F 52 45 00 DB   "RESTORE",0   
+1E9C   22 03                  DW   RESTO   
+1E9E   44 41 54 41 00 DATAL:   DB   "DATA",0   
+1EA3   17 02                  DW   RUN   
+1EA5   46 4F 52 00            DB   "FOR",0   
+1EA9   F1 03                  DW   FOR   
+1EAB   4E 45 58 54 00 NEXTL:   DB   "NEXT",0   
+1EB0   9E 06                  DW   NEXT   
+1EB2   47 4F 53 55 42 00 GOSBL:   DB   "GOSUB",0   
+1EB8   46 03                  DW   GOSUB   
+1EBA   52 45 54 55 52 4E 00   DB   "RETURN",0   
+1EC1   2E 03                  DW   RETUR   
+1EC3   49 4E 50 55 54 00      DB   "INPUT",0   
+1EC9   2D 07                  DW   INPUT   
+1ECB   50 52 49 4E 54 00      DB   "PRINT",0   
+1ED1   61 03                  DW   PRINT   
+1ED3   47 4F        GOTOL:    DB   "GO"   
+1ED5   54 4F 00     TOLIT:    DB   "TO",0   
+1ED8   02 03                  DW   GOTO   
+1EDA   4C 45 54 00            DB   "LET",0   
+1EDE   FD 05                  DW   LET   
+1EE0   53 54 4F 50 00         DB   "STOP",0   
+1EE5   7E 08                  DW   STOP   
+1EE7   45 4E 44 00            DB   "END",0   
+1EEB   D7 01                  DW   ENDIT   
+1EED   52 45 4D 00            DB   "REM",0   
+1EF1   17 02                  DW   RUN   
+1EF3   21 00                  DB   "!",0   
+1EF5   17 02                  DW   RUN   
+1EF7   3F 00                  DB   "?",0   
+1EF9   61 03                  DW   PRINT   
+1EFB   52 41 4E 44 4F 4D 49 5A 45 00 DB   "RANDOMIZE",0   
+1F05   AB 08                  DW   RANDO   
+1F07   4F 4E 00               DB   "ON",0   
+1F0A   C1 08                  DW   ON   
+1F0C   4F 55 54 00            DB   "OUT",0   
+1F10   56 08                  DW   OUTP   
+1F12   44 49 4D 00            DB   "DIM",0   
+1F16   BD 09                  DW   DIM   
+1F18   43 48 41 4E 47 45 00   DB   "CHANGE",0   
+1F1F   36 09                  DW   CHANG   
+1F21   44 45 46     DEFLI:    DB   "DEF"   
+1F24   46 4E 00     FNLIT:    DB   "FN",0   
+1F27   17 02                  DW   RUN   
+1F29   50 4F 4B 45 00         DB   "POKE",0   
+1F2E   B9 1F                  DW   POKE   
+1F30   43 41 4C 4C 00         DB   "CALL",0   
+1F35   D7 1F                  DW   JUMP   
+1F37   00                     DB   0   ;END OF TABLE
+1F38                             ; 
+1F38                             ; DDT COMMAND, CPM ONLY
+1F38                             ; 
+1F38                             ;PAGE
+1F38                             ; 
+1F38                FACDE:    EQU   $   
+1F38                             ; 
+1F38                             ; THIS ROUTINE CONVERTS THE FACC TO AN ADDRESS IN D,E
+1F38                             ; 
+1F38   CD EE 0B               CALL   INT   ;INTEGERIZE THE FACC
+1F3B   3A 58 22               LDA   FACC   ;GET THE EXPONENT
+1F3E   B7                     ORA   A   ;TEST IT
+1F3F   FA 28 1C               JM   OVERR   ;BRIF NEGATIVE ADDRESS
+1F42   D6 10                  SUI   16   ;SUBTRACT MAX EXPONENT
+1F44   CA 5A 1F               JZ   FDE2   ;BRIF EQUAL MAX
+1F47   F2 28 1C               JP   OVERR   ;BRIF GREATER THAN 64K
+1F4A   2F                     CMA      ;2'S COMPLIMENT OF A YIELDS..
+1F4B   3C                     INR   A   ;16-A
+1F4C   4F                     MOV   C,A   ;SAVE SHIFT COUNT
+1F4D   AF           FDE1:     XRA   A   ;CLEAR CARRY
+1F4E   21 59 22               LXI   H,FACC+1   ;POINT MANTISSA
+1F51   06 02                  MVI   B,2   ;WORDS TO SHIFT
+1F53   CD 07 19               CALL   FSHFT   ;GO SHIFT FACC+1 AND FACC+2
+1F56   0D                     DCR   C   ;REDUCE COUNT
+1F57   C2 4D 1F               JNZ   FDE1   ;LOOP TILL COMPLETE
+1F5A   21 59 22     FDE2:     LXI   H,FACC+1   ;POINT HIGH BYTE
+1F5D   56                     MOV   D,M   ;LOAD D
+1F5E   23                     INX   H   ;POINT LOW BYTE
+1F5F   5E                     MOV   E,M   ;LOADE E
+1F60   C9                     RET      ;RETURN
+1F61                             ; 
+1F61                             ; 
+1F61                LOCAT:    EQU   $   
+1F61                             ; 
+1F61                             ; THIS ROUTINE SEARCHES FOR A LINE IN THE PROGRAM FILE.
+1F61                             ; Z SET, C RESET==>LINE FOUND. ADDRESS IS IN H,L
+1F61                             ; C SET, Z RESET==>NOT FOUND. H,L POINT TO NEXT LINE
+1F61                             ; C SET, Z SET==>NOT FOUND. H,L POINT AT END OF PROGRAM
+1F61                             ; 
+1F61   21 96 22               LXI   H,BEGPR   ;POINT START
+1F64   7E           FIND1:    MOV   A,M   ;FETCH LENGTH OF LINE
+1F65   E5                     PUSH   H   ;SAVE POINTER
+1F66   B7                     ORA   A   ;TEST
+1F67   CA 86 1F               JZ   FIND3   ;BRIF END
+1F6A   23                     INX   H   ;POINT LINE #
+1F6B   7E                     MOV   A,M   ;FETCH HI #
+1F6C   B8                     CMP   B   ;COMPARE TO REQUESTED
+1F6D   DA 7E 1F               JC   FIND2   ;BRIF LOW
+1F70   C2 86 1F               JNZ   FIND3   ;BRIF PAST AND NOT FOUND
+1F73   23                     INX   H   ;POINT LO #
+1F74   7E                     MOV   A,M   ;FETCH IT
+1F75   B9                     CMP   C   ;COMPARE TO REQUESTED
+1F76   DA 7E 1F               JC   FIND2   ;BRIF LOW
+1F79   C2 86 1F               JNZ   FIND3   ;BRIF PAST AND NOT FOUND
+1F7C   E1                     POP   H   ;POINT BEGIN IF MATCH
+1F7D   C9                     RET      ;RETURN
+1F7E                             ; 
+1F7E                             ; BUMP H,L TO NEXT LINE
+1F7E                             ; 
+1F7E   E1           FIND2:    POP   H   ;POINT START OF LINE
+1F7F   5E                     MOV   E,M   ;LENGHT TO E
+1F80   16 00                  MVI   D,0   ;CLEAR D
+1F82   19                     DAD   D   ;BUMP H,L
+1F83   C3 64 1F               JMP   FIND1   ;CONTINUE
+1F86                             ; 
+1F86                             ; LINE NOT FOUND
+1F86                             ; 
+1F86   37           FIND3:    STC      ;SET CARRY
+1F87   E1                     POP   H   ;POINT LINE JUST PAST REQUESTED
+1F88   C9                     RET      ;RETURN
+1F89                             ; 
+1F89                             ; 
+1F89                SEEK:     EQU   $   
+1F89                             ; 
+1F89                             ;  THIS CODE FINDS AN ENTRY IN THE TABLE POINTED TO BY D,E.
+1F89                             ;  THE SOUGHT ENTRY IS POINTED TO BY H,L.
+1F89                             ; 
+1F89   E5           SEEK1:    PUSH   H   ;SAVE ADDRESS OF STRING
+1F8A   1A                     LDAX   D   ;GET BYTE FROM TABLE
+1F8B   B7                     ORA   A   ;TEST IT
+1F8C   CA AC 1F               JZ   SEEK3   ;BRIF END OF TABLE
+1F8F   D7                     RST   2   ;COMPARE
+1F90   C2 9C 1F               JNZ   SEEK2   ;BRIF NOT FOUND
+1F93   E3                     XTHL      ;PUT CURRENT H,L ON STACK
+1F94   CD FA 1A               CALL   SKP2Z   ;FIND END TO LITERAL IN TABLE
+1F97   13                     INX   D   ;POINT LOW BYTE
+1F98   E1                     POP   H   ;RESTORE LINE POINTER
+1F99   3C                     INR   A   ;PUT 1 IN A
+1F9A   B7                     ORA   A   ;RESET Z BIT
+1F9B   C9                     RET      ;RETURN
+1F9C   CD FA 1A     SEEK2:    CALL   SKP2Z   ;FIND END OF TABLE LITERAL
 1F9F   13                     INX   D   ; 
-1FA0   E1                     POP   H   ;GET ORIGINAL STRING
-1FA1   1A                     LDAX   D   ;GET BYTE
-1FA2   17                     RAL      ;HIGH BIT TO CARRY
-1FA3   D2 87 1F               JNC   SEEK1   ;NOT A FUNCTION SEARCH
-1FA6   13                     INX   D   ;POINT NEXT BYTE IN FUNCTION TABLE
-1FA7   C3 87 1F               JMP   SEEK1   ;CONTINUE SEARCH
-1FAA   E1           SEEK3:    POP   H   ;RESTORE ORIGINAL STRING
-1FAB   C9                     RET      ;RETURN
-1FAC                             ; 
-1FAC                PEEK:     EQU   $   
-1FAC                             ; 
-1FAC                             ; STMT: A=PEEK(X). RETURNS DECIMAL VALUE OF MEMORY ADDRESS X.
-1FAC                             ; 
-1FAC   CD 36 1F               CALL   FACDE   ;GET ADDRESS IN D,E
-1FAF   EB                     XCHG      ;ADDRESS TO H,L
-1FB0   11 00 00               LXI   D,0   ;CLEAR D,E
-1FB3   5E                     MOV   E,M   ;PUT MEMORY BYTE IN E
-1FB4   C3 8A 1C               JMP   BINFL   ;CONVERT D,E TO BINARY AND RETURN
-1FB7                             ; 
-1FB7                POKE:     EQU   $   
-1FB7                             ; 
-1FB7                             ; STMT: POKE <ADDRESS>,<VALUE>.  PUTS IN MEMORY ADDRESS.
-1FB7                             ; 
-1FB7   CD 8C 0F               CALL   EXPR   ;EVALUATE ADDRESS EXPRESSION
-1FBA   7E                     MOV   A,M   ;LOAD NEXT CHARACTER
-1FBB   FE 2C                  CPI   ","   ;TEST
-1FBD   C2 10 1C               JNZ   SNERR   ;BRIF ERROR
-1FC0   23                     INX   H   ;POINT NEXT
-1FC1   E5                     PUSH   H   ;SAVE H,L
-1FC2   CD 36 1F               CALL   FACDE   ;PUT ADDRESS IN D,E
-1FC5   E1                     POP   H   ;RESTORE H,L
-1FC6   D5                     PUSH   D   ;SAVE ADDRESS
-1FC7   CD 8C 0F               CALL   EXPR   ;EVALUATE VALUE EXPRESSION
-1FCA   CD 95 1A               CALL   EOL   ;TEST FOR END OF LINE
-1FCD   CD 67 1C               CALL   FBIN   ;CONVERT FACC TO A REGISTER VALUE
-1FD0   E1                     POP   H   ;GET D,E ADDRESS IN H,L
-1FD1   77                     MOV   M,A   ;MOVE BYTE
-1FD2   C3 17 02               JMP   RUN   ;CONTINUE
-1FD5                             ; 
-1FD5                             ; 
-1FD5                JUMP:     EQU   $   
-1FD5                             ; 
-1FD5                             ; STMT: CALL <ADDRESS>. EXECUTES CODE AT MEMORY ADDRESS.
-1FD5                             ; 
-1FD5   CD 8C 0F               CALL   EXPR   ;EVALUATE ADDRESS EXPRESSION
-1FD8   CD 95 1A               CALL   EOL   ;TEST FOR END OF LINE
-1FDB   CD 36 1F               CALL   FACDE   ;CONVERT FACC TO ADDRESS IN D,E
-1FDE   21 17 02               LXI   H,RUN   ;MAKE INTO SUBROUTINE
-1FE1   E5                     PUSH   H   
-1FE2   EB                     XCHG      ;MOVE ADDRESS TO HL
-1FE3   E9                     PCHL      ;EXECUTE USER'S ROUTINE
-1FE4                             ;PAGE
-1FE4                ROMEN:    EQU   $-1   
-1FE4                             ; 
+1FA0   13                     INX   D   ;POINT NEXT LIT IN TABLE
+1FA1   13                     INX   D   ; 
+1FA2   E1                     POP   H   ;GET ORIGINAL STRING
+1FA3   1A                     LDAX   D   ;GET BYTE
+1FA4   17                     RAL      ;HIGH BIT TO CARRY
+1FA5   D2 89 1F               JNC   SEEK1   ;NOT A FUNCTION SEARCH
+1FA8   13                     INX   D   ;POINT NEXT BYTE IN FUNCTION TABLE
+1FA9   C3 89 1F               JMP   SEEK1   ;CONTINUE SEARCH
+1FAC   E1           SEEK3:    POP   H   ;RESTORE ORIGINAL STRING
+1FAD   C9                     RET      ;RETURN
+1FAE                             ; 
+1FAE                PEEK:     EQU   $   
+1FAE                             ; 
+1FAE                             ; STMT: A=PEEK(X). RETURNS DECIMAL VALUE OF MEMORY ADDRESS X.
+1FAE                             ; 
+1FAE   CD 38 1F               CALL   FACDE   ;GET ADDRESS IN D,E
+1FB1   EB                     XCHG      ;ADDRESS TO H,L
+1FB2   11 00 00               LXI   D,0   ;CLEAR D,E
+1FB5   5E                     MOV   E,M   ;PUT MEMORY BYTE IN E
+1FB6   C3 8A 1C               JMP   BINFL   ;CONVERT D,E TO BINARY AND RETURN
+1FB9                             ; 
+1FB9                POKE:     EQU   $   
+1FB9                             ; 
+1FB9                             ; STMT: POKE <ADDRESS>,<VALUE>.  PUTS IN MEMORY ADDRESS.
+1FB9                             ; 
+1FB9   CD 8C 0F               CALL   EXPR   ;EVALUATE ADDRESS EXPRESSION
+1FBC   7E                     MOV   A,M   ;LOAD NEXT CHARACTER
+1FBD   FE 2C                  CPI   ","   ;TEST
+1FBF   C2 10 1C               JNZ   SNERR   ;BRIF ERROR
+1FC2   23                     INX   H   ;POINT NEXT
+1FC3   E5                     PUSH   H   ;SAVE H,L
+1FC4   CD 38 1F               CALL   FACDE   ;PUT ADDRESS IN D,E
+1FC7   E1                     POP   H   ;RESTORE H,L
+1FC8   D5                     PUSH   D   ;SAVE ADDRESS
+1FC9   CD 8C 0F               CALL   EXPR   ;EVALUATE VALUE EXPRESSION
+1FCC   CD 95 1A               CALL   EOL   ;TEST FOR END OF LINE
+1FCF   CD 67 1C               CALL   FBIN   ;CONVERT FACC TO A REGISTER VALUE
+1FD2   E1                     POP   H   ;GET D,E ADDRESS IN H,L
+1FD3   77                     MOV   M,A   ;MOVE BYTE
+1FD4   C3 17 02               JMP   RUN   ;CONTINUE
+1FD7                             ; 
+1FD7                             ; 
+1FD7                JUMP:     EQU   $   
+1FD7                             ; 
+1FD7                             ; STMT: CALL <ADDRESS>. EXECUTES CODE AT MEMORY ADDRESS.
+1FD7                             ; 
+1FD7   CD 8C 0F               CALL   EXPR   ;EVALUATE ADDRESS EXPRESSION
+1FDA   CD 95 1A               CALL   EOL   ;TEST FOR END OF LINE
+1FDD   CD 38 1F               CALL   FACDE   ;CONVERT FACC TO ADDRESS IN D,E
+1FE0   21 17 02               LXI   H,RUN   ;MAKE INTO SUBROUTINE
+1FE3   E5                     PUSH   H   
+1FE4   EB                     XCHG      ;MOVE ADDRESS TO HL
+1FE5   E9                     PCHL      ;EXECUTE USER'S ROUTINE
+1FE6                             ;PAGE
+1FE6                ROMEN:    EQU   $-1   
+1FE6                             ; 
 2000                          .ORG   8192+OFFSET   ;RAM STARTS OF 8K BOUNDARY
 2000                             ;        ORG     2400H+OFFSET   ;RAM STARTS ON 9K BOUNDARY
 2000                             ; 
@@ -5436,7 +5436,7 @@
 3DD0                          .ORG   $3DD0   
 3DD0   49 4D 53 41 49 20 39 4B 20 42 41 53 49 43 20 76 31 2E 34 20 30 44 39 37 35 42 00 DB   "IMSAI 9K BASIC v1.4 0D975B",0   
 3DF7                          .ORG   $3DF7   
-3DF7   E3 1F                  DW   ROMEN-BASIC   ; data length
+3DF7   E5 1F                  DW   ROMEN-BASIC   ; data length
 3DF9   00 00                  DW   BASIC   ; jump to addess
 3DFB   00 00                  DW   BASIC   ; load address
 3DFD   0D 97 5B               DB   $0d,$97,$5b   ; checksum
@@ -7000,45 +7000,45 @@ WHATL:              1D74 DEFINED AT LINE 5076
                     > USED AT LINE 1085
 VERS:               1D79 DEFINED AT LINE 5077
                     > USED AT LINE 240
-LLINE:              1D85 DEFINED AT LINE 5079
+LLINE:              1D87 DEFINED AT LINE 5079
                     > USED AT LINE 1275
-TABLI:              1D8A DEFINED AT LINE 5080
+TABLI:              1D8C DEFINED AT LINE 5080
                     > USED AT LINE 700
-STEPL:              1D8E DEFINED AT LINE 5081
+STEPL:              1D90 DEFINED AT LINE 5081
                     > USED AT LINE 810
-THENL:              1D93 DEFINED AT LINE 5082
+THENL:              1D95 DEFINED AT LINE 5082
                     > USED AT LINE 1021
-PILIT:              1D98 DEFINED AT LINE 5083
+PILIT:              1D9A DEFINED AT LINE 5083
                     > USED AT LINE 2812
-TWO:                1D9B DEFINED AT LINE 5084
+TWO:                1D9D DEFINED AT LINE 5084
                     > USED AT LINE 1902
-TEN:                1D9F DEFINED AT LINE 5085
+TEN:                1DA1 DEFINED AT LINE 5085
                     > USED AT LINE 3449
                     > USED AT LINE 3569
-PI:                 1DA3 DEFINED AT LINE 5086
+PI:                 1DA5 DEFINED AT LINE 5086
                     > USED AT LINE 1790
                     > USED AT LINE 2871
-QTRPI:              1DA7 DEFINED AT LINE 5087
+QTRPI:              1DA9 DEFINED AT LINE 5087
                     > USED AT LINE 1908
-NEGON:              1DAB DEFINED AT LINE 5088
+NEGON:              1DAD DEFINED AT LINE 5088
                     > USED AT LINE 2064
-LN2C:               1DAF DEFINED AT LINE 5089
+LN2C:               1DB1 DEFINED AT LINE 5089
                     > USED AT LINE 1941
-SQC1:               1DB3 DEFINED AT LINE 5090
+SQC1:               1DB5 DEFINED AT LINE 5090
                     > USED AT LINE 2110
-SQC2:               1DB7 DEFINED AT LINE 5091
+SQC2:               1DB9 DEFINED AT LINE 5091
                     > USED AT LINE 2112
-SQC3:               1DBB DEFINED AT LINE 5105
+SQC3:               1DBD DEFINED AT LINE 5105
                     > USED AT LINE 2132
-ATNCO:              1DD3 DEFINED AT LINE 5111
+ATNCO:              1DD5 DEFINED AT LINE 5111
                     > USED AT LINE 1916
-HALFP:              1DD7 DEFINED AT LINE 5113
+HALFP:              1DD9 DEFINED AT LINE 5113
                     > USED AT LINE 1793
                     > USED AT LINE 1815
                     > USED AT LINE 1863
-SINCO:              1DE7 DEFINED AT LINE 5117
+SINCO:              1DE9 DEFINED AT LINE 5117
                     > USED AT LINE 1821
-ONE:                1DEB DEFINED AT LINE 5119
+ONE:                1DED DEFINED AT LINE 5119
                     > USED AT LINE 803
                     > USED AT LINE 1898
                     > USED AT LINE 1948
@@ -7046,86 +7046,86 @@ ONE:                1DEB DEFINED AT LINE 5119
                     > USED AT LINE 2000
                     > USED AT LINE 2039
                     > USED AT LINE 2861
-NULLI:              1DED DEFINED AT LINE 5120
+NULLI:              1DEF DEFINED AT LINE 5120
                     > USED AT LINE 370
-LNCO:               1E07 DEFINED AT LINE 5127
+LNCO:               1E09 DEFINED AT LINE 5127
                     > USED AT LINE 1954
-LN2E:               1E0B DEFINED AT LINE 5129
+LN2E:               1E0D DEFINED AT LINE 5129
                     > USED AT LINE 1982
-EXPCO:              1E1F DEFINED AT LINE 5134
+EXPCO:              1E21 DEFINED AT LINE 5134
                     > USED AT LINE 2008
-LNC:                1E23 DEFINED AT LINE 5136
+LNC:                1E25 DEFINED AT LINE 5136
                     > USED AT LINE 1961
-READY:              1E27 DEFINED AT LINE 5137
+READY:              1E29 DEFINED AT LINE 5137
                     > USED AT LINE 247
-STOPM:              1E2E DEFINED AT LINE 5140
+STOPM:              1E30 DEFINED AT LINE 5140
                     > USED AT LINE 1473
                     > USED AT LINE 4474
-ERRMS:              1E3D DEFINED AT LINE 5143
+ERRMS:              1E3F DEFINED AT LINE 5143
                     > USED AT LINE 4875
 TTY:                0002 DEFINED AT LINE 5144
-JMPTB:              1E4D DEFINED AT LINE 5154
+JMPTB:              1E4F DEFINED AT LINE 5154
                     > USED AT LINE 503
-KEYL:               1E7A DEFINED AT LINE 5169
+KEYL:               1E7C DEFINED AT LINE 5169
                     > USED AT LINE 435
-DATAL:              1E9C DEFINED AT LINE 5179
+DATAL:              1E9E DEFINED AT LINE 5179
                     > USED AT LINE 1400
-NEXTL:              1EA9 DEFINED AT LINE 5183
+NEXTL:              1EAB DEFINED AT LINE 5183
                     > USED AT LINE 915
-GOSBL:              1EB0 DEFINED AT LINE 5185
+GOSBL:              1EB2 DEFINED AT LINE 5185
                     > USED AT LINE 1017
                     > USED AT LINE 1527
-GOTOL:              1ED1 DEFINED AT LINE 5193
+GOTOL:              1ED3 DEFINED AT LINE 5193
                     > USED AT LINE 1013
                     > USED AT LINE 1522
-TOLIT:              1ED3 DEFINED AT LINE 5194
+TOLIT:              1ED5 DEFINED AT LINE 5194
                     > USED AT LINE 796
                     > USED AT LINE 1582
                     > USED AT LINE 1624
-DEFLI:              1F1F DEFINED AT LINE 5218
+DEFLI:              1F21 DEFINED AT LINE 5218
                     > USED AT LINE 2647
-FNLIT:              1F22 DEFINED AT LINE 5219
+FNLIT:              1F24 DEFINED AT LINE 5219
                     > USED AT LINE 2807
-FACDE:              1F36 DEFINED AT LINE 5231
+FACDE:              1F38 DEFINED AT LINE 5231
                     > USED AT LINE 3340
                     > USED AT LINE 3346
                     > USED AT LINE 4932
                     > USED AT LINE 5334
                     > USED AT LINE 5350
                     > USED AT LINE 5367
-FDE1:               1F4B DEFINED AT LINE 5245
+FDE1:               1F4D DEFINED AT LINE 5245
                     > USED AT LINE 5250
-FDE2:               1F58 DEFINED AT LINE 5251
+FDE2:               1F5A DEFINED AT LINE 5251
                     > USED AT LINE 5240
-LOCAT:              1F5F DEFINED AT LINE 5258
+LOCAT:              1F61 DEFINED AT LINE 5258
                     > USED AT LINE 286
                     > USED AT LINE 634
-FIND1:              1F62 DEFINED AT LINE 5266
+FIND1:              1F64 DEFINED AT LINE 5266
                     > USED AT LINE 5289
-FIND2:              1F7C DEFINED AT LINE 5285
+FIND2:              1F7E DEFINED AT LINE 5285
                     > USED AT LINE 5273
                     > USED AT LINE 5278
-FIND3:              1F84 DEFINED AT LINE 5293
+FIND3:              1F86 DEFINED AT LINE 5293
                     > USED AT LINE 5269
                     > USED AT LINE 5274
                     > USED AT LINE 5279
-SEEK:               1F87 DEFINED AT LINE 5298
-SEEK1:              1F87 DEFINED AT LINE 5303
+SEEK:               1F89 DEFINED AT LINE 5298
+SEEK1:              1F89 DEFINED AT LINE 5303
                     > USED AT LINE 504
                     > USED AT LINE 2818
                     > USED AT LINE 5323
                     > USED AT LINE 5325
-SEEK2:              1F9A DEFINED AT LINE 5316
+SEEK2:              1F9C DEFINED AT LINE 5316
                     > USED AT LINE 5308
-SEEK3:              1FAA DEFINED AT LINE 5326
+SEEK3:              1FAC DEFINED AT LINE 5326
                     > USED AT LINE 5306
-PEEK:               1FAC DEFINED AT LINE 5330
+PEEK:               1FAE DEFINED AT LINE 5330
                     > USED AT LINE 5061
-POKE:               1FB7 DEFINED AT LINE 5340
+POKE:               1FB9 DEFINED AT LINE 5340
                     > USED AT LINE 5222
-JUMP:               1FD5 DEFINED AT LINE 5361
+JUMP:               1FD7 DEFINED AT LINE 5361
                     > USED AT LINE 5224
-ROMEN:              1FE3 DEFINED AT LINE 5373
+ROMEN:              1FE5 DEFINED AT LINE 5373
                     > USED AT LINE 5457
 RAM:                2000 DEFINED AT LINE 5381
                     > USED AT LINE 103

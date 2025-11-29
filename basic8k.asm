@@ -5075,7 +5075,7 @@ NRNDX:  DB      1BH,0ECH
         DB      2BH,1EH
 WHATL:  DB      'WHAT',0
 VERS    EQU     $       ;VERSION MESSAGE
-        DB      '8K VERS 1.4',0
+        DB      $0d,$0a,'8K VERS 1.4',0
 LLINE:  DB      'LINE',0
 TABLI:  DB      'TAB',0
 STEPL:  DB      'STEP',0

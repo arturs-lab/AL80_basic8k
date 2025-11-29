@@ -74,7 +74,7 @@
 0000                SIO_TX_EMPTY:   EQU   $04   
 0000                UART_TX_EMPTY:   EQU   $20   
 0000                UART_RX_FULL:   EQU   $01   
-0000                UART:     EQU   $04   
+0000                UART:     EQU   $08   
 0000                UART0:    EQU   UART+0   
 0000                UART1:    EQU   UART+1   
 0000                UART2:    EQU   UART+2   
@@ -208,16 +208,16 @@
 009B   09                     DAD   B   ;ADD TO ADDRESS
 009C   22 91 22               SHLD   DATAB   ;SAVE ADDR OF START OF DATA
 009F   3E 80        UART_INIT:   MVI   A,80h   ;Mask to Set DLAB Flag
-00A1   D3 07                  OUT   UART3   
+00A1   D3 0B                  OUT   UART3   
 00A3   3E 0C                  MVI   A,12   ;Divisor = 12 @ 9600bps w/ 1.8432 Mhz
 00A5                             ;			MVI    A,1			;Divisor = 1 @ 115200bps w/ 1.8432 Mhz
-00A5   D3 04                  OUT   UART0   ;Set BAUD rate to 9600
+00A5   D3 08                  OUT   UART0   ;Set BAUD rate to 9600
 00A7   3E 00                  MVI   A,00   
-00A9   D3 05                  OUT   UART1   ;Set BAUD rate to 9600
+00A9   D3 09                  OUT   UART1   ;Set BAUD rate to 9600
 00AB   3E 03                  MVI   A,03h   
-00AD   D3 07                  OUT   UART3   ;Set 8-bit data, 1 stop bit, reset DLAB Flag
+00AD   D3 0B                  OUT   UART3   ;Set 8-bit data, 1 stop bit, reset DLAB Flag
 00AF   3E 00                  MVI   A,00h   
-00B1   D3 05                  OUT   UART1   ;no interrupts
+00B1   D3 09                  OUT   UART1   ;no interrupts
 00B3   AF                     XRA   A   ;GET A ZERO IN A
 00B4   F5                     PUSH   PSW   ;SET STACK 1 LEVEL DEEP WITHOUT A GOSUB
 00B5   21 00 00               LXI   H,0   ;CLEAR H,L
@@ -4263,7 +4263,7 @@
 1924   3E 20                  MVI   A," "   ;GET SPACE
 1926   CD 5B 19               CALL   TESTO   ;WRITE TO TERMINAL
 1929                TREAD:    EQU   $   
-1929   DB 09                  IN   UART5   ;GET TTY STATUS
+1929   DB 0D                  IN   UART5   ;GET TTY STATUS
 192B   E6 01                  ANI   UART_RX_FULL   ;TEST IF RXRDY
 192D   CA 29 19               JZ   TREAD   ;LOOP TIL CHAR
 1930   CD 40 1A               CALL   GETCH   ;GO READ THE CHAR
@@ -4288,11 +4288,11 @@
 1957   21 CF 20               LXI   H,IOBUF+1   ;POINT BEGIN
 195A   C9                     RET      ;ELSE, RETURN
 195B   F5           TESTO:    PUSH   PSW   ;SAVE CHAR
-195C   DB 09        TEST1:    IN   UART5   ;GET STATUS
+195C   DB 0D        TEST1:    IN   UART5   ;GET STATUS
 195E   E6 20                  ANI   UART_TX_EMPTY   
 1960   CA 5C 19               JZ   TEST1   ;LOOP TILL READY
 1963   F1                     POP   PSW   ;GET CHAR
-1964   D3 04                  OUT   UART_TX   ;WRITE IT
+1964   D3 08                  OUT   UART_TX   ;WRITE IT
 1966   C9                     RET      ;RETURN
 1967   3E 0D        CRLF:     MVI   A,0DH   ;LOAD A CR
 1969   CD 5B 19               CALL   TESTO   ;WRITE IT
@@ -4445,10 +4445,10 @@
 1A3B                             ; CANCEL IF CONTROL-C
 1A3B                             ; TOGGLE OUTPUT SUPPRESS SW IF CONTROL-O
 1A3B                             ; 
-1A3B   DB 09                  IN   UART5   ;GET TTY STATUS
+1A3B   DB 0D                  IN   UART5   ;GET TTY STATUS
 1A3D   E6 01                  ANI   UART_RX_FULL   ;TEST IF RXRDY
 1A3F   C8                     RZ      ;RETURN IF NO CHAR
-1A40   DB 04        GETCH:    IN   UART_RX   ;READ THE CHAR
+1A40   DB 08        GETCH:    IN   UART_RX   ;READ THE CHAR
 1A42   E6 7F                  ANI   7FH   ;TURN OFF PARITY
 1A44   FE 03                  CPI   3   ;TEST IF CONTROL C
 1A46   C2 5F 1A               JNZ   TSTC1   ;BRIF NOT
@@ -5454,7 +5454,7 @@ UART_TX_EMPTY:      0020 DEFINED AT LINE 77
 UART_RX_FULL:       0001 DEFINED AT LINE 78
                     > USED AT LINE 4276
                     > USED AT LINE 4464
-UART:               0004 DEFINED AT LINE 80
+UART:               0008 DEFINED AT LINE 80
                     > USED AT LINE 81
                     > USED AT LINE 82
                     > USED AT LINE 83
@@ -5463,27 +5463,27 @@ UART:               0004 DEFINED AT LINE 80
                     > USED AT LINE 86
                     > USED AT LINE 87
                     > USED AT LINE 88
-UART0:              0004 DEFINED AT LINE 81
+UART0:              0008 DEFINED AT LINE 81
                     > USED AT LINE 89
                     > USED AT LINE 90
                     > USED AT LINE 222
-UART1:              0005 DEFINED AT LINE 82
+UART1:              0009 DEFINED AT LINE 82
                     > USED AT LINE 224
                     > USED AT LINE 228
-UART2:              0006 DEFINED AT LINE 83
-UART3:              0007 DEFINED AT LINE 84
+UART2:              000A DEFINED AT LINE 83
+UART3:              000B DEFINED AT LINE 84
                     > USED AT LINE 219
                     > USED AT LINE 226
-UART4:              0008 DEFINED AT LINE 85
-UART5:              0009 DEFINED AT LINE 86
+UART4:              000C DEFINED AT LINE 85
+UART5:              000D DEFINED AT LINE 86
                     > USED AT LINE 4275
                     > USED AT LINE 4301
                     > USED AT LINE 4463
-UART6:              000A DEFINED AT LINE 87
-UART7:              000B DEFINED AT LINE 88
-UART_TX:            0004 DEFINED AT LINE 89
+UART6:              000E DEFINED AT LINE 87
+UART7:              000F DEFINED AT LINE 88
+UART_TX:            0008 DEFINED AT LINE 89
                     > USED AT LINE 4305
-UART_RX:            0004 DEFINED AT LINE 90
+UART_RX:            0008 DEFINED AT LINE 90
                     > USED AT LINE 4466
 OFFSET:             0000 DEFINED AT LINE 92
                     > USED AT LINE 102

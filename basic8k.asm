@@ -5450,12 +5450,12 @@ PROGE:  DS      2       ;ADDRESS OF PROGRAM END
 BEGPR:
 ;
 		org $3DD0
-	db "IMSAI 9K BASIC v1.4 0D975B",0
+	db "AL80 IMSAI 8K BASIC v1.4 0CB101",0
 
 
 		org $3DF7
 	dw ROMEN-BASIC	; data length
 	dw BASIC		; jump to addess
 	dw BASIC		; load address
-	db $0d,$97,$5b	; checksum
+	db $0c,$b1,$01	; checksum
         END

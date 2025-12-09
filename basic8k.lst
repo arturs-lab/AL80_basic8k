@@ -5434,12 +5434,12 @@
 2296                BEGPR:       
 2296                             ; 
 3DD0                          .ORG   $3DD0   
-3DD0   49 4D 53 41 49 20 39 4B 20 42 41 53 49 43 20 76 31 2E 34 20 30 44 39 37 35 42 00 DB   "IMSAI 9K BASIC v1.4 0D975B",0   
+3DD0   41 4C 38 30 20 49 4D 53 41 49 20 38 4B 20 42 41 53 49 43 20 76 31 2E 34 20 30 43 42 31 30 31 00 DB   "AL80 IMSAI 8K BASIC v1.4 0CB101",0   
 3DF7                          .ORG   $3DF7   
 3DF7   E5 1F                  DW   ROMEN-BASIC   ; data length
 3DF9   00 00                  DW   BASIC   ; jump to addess
 3DFB   00 00                  DW   BASIC   ; load address
-3DFD   0D 97 5B               DB   $0d,$97,$5b   ; checksum
+3DFD   0C B1 01               DB   $0c,$b1,$01   ; checksum
 3E00                          END      
 
 
